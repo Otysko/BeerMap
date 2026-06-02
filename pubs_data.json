@@ -1,0 +1,114 @@
+[
+  {
+    "id": "pub-1",
+    "name": "Lokál Dlouhááá",
+    "lat": 50.090333,
+    "lng": 14.425983,
+    "address": "Dlouhá 731/33, 110 00 Praha 1",
+    "notes": "Legendární pražská pivnice proslulá špičkově ošetřenou plzní čepovanou přímo z tanků.",
+    "beers": [
+      {
+        "id": "beer-1-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 64,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Dokonalá tanková plzeň čepovaná na hladinku, šnyt i mlíko."
+      },
+      {
+        "id": "beer-1-2",
+        "name": "Velkopopovický Kozel Černý",
+        "degrees": "10°",
+        "price": 58,
+        "style": "Tmavé výčepní",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemné karamelové tmavé pivo s vyváženou doznívající hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-2",
+    "name": "Zlý časy",
+    "lat": 50.063812,
+    "lng": 14.444265,
+    "address": "Čestmírova 390/5, 140 00 Praha 4",
+    "notes": "Útulná malostránská a nuselská klasika s mnoha pípami s nabídkou z malých nezávislých pivovarů.",
+    "beers": [
+      {
+        "id": "beer-2-1",
+        "name": "Matuska Apollo Galaxy",
+        "degrees": "13°",
+        "price": 89,
+        "style": "American Pale Ale (APA)",
+        "brewery": "Pivovar Matuška",
+        "description": "Svrchně kvašené pivo s výrazným chmelovým aroma citrusu a tropického ovoce."
+      },
+      {
+        "id": "beer-2-2",
+        "name": "Únětické Pivo Světlé",
+        "degrees": "10°",
+        "price": 52,
+        "style": "Světlé výčepní",
+        "brewery": "Únětický pivovar",
+        "description": "Poctivé nefiltrované pivo z regionálního pivovaru s příjemným řízem."
+      },
+      {
+        "id": "beer-2-3",
+        "name": "Bernard Nefiltrovaný ležák",
+        "degrees": "11°",
+        "price": 56,
+        "style": "Světlý ležák",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Pivo s výraznou chmelovou vůní, hustou pěnou a lahodnou plností."
+      }
+    ]
+  },
+  {
+    "id": "pub-3",
+    "name": "Hostinec U Jelínků",
+    "lat": 50.082725,
+    "lng": 14.420138,
+    "address": "Charvátova 110/2, 110 00 Praha 1",
+    "notes": "Jedna z nejstarších nepřetržitě fungujících plzeňských pivnic v Praze s neopakovatelnou atmosférou.",
+    "beers": [
+      {
+        "id": "beer-3-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 61,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Tradiční plzeňské točené s perfektním řízem a hustou krémovou pěnou."
+      }
+    ]
+  },
+  {
+    "id": "pub-4",
+    "name": "Pivovarský Klub Benedict",
+    "lat": 50.091189,
+    "lng": 14.444985,
+    "address": "Křižíkova 272/17, 186 00 Praha 8 - Karlín",
+    "notes": "Otevřený prostor pro milovníky piva v Karlíně s rotujícími pípami a stovkami lahví z celého světa.",
+    "beers": [
+      {
+        "id": "beer-4-1",
+        "name": "Břevnovský Benedict Světlý ležák",
+        "degrees": "12°",
+        "price": 68,
+        "style": "Světlý ležák",
+        "brewery": "Břevnovský klášterní pivovar",
+        "description": "Chlebnaté, středně hořké pivo čepované přímo od zdroje v karlínské pobočce."
+      },
+      {
+        "id": "beer-4-2",
+        "name": "Kocour Stout",
+        "degrees": "12°",
+        "price": 78,
+        "style": "Stout",
+        "brewery": "Pivovar Kocour Varnsdorf",
+        "description": "Tmavé svrchně kvašené pivo s výraznou chutí po kávě a čokoládě."
+      }
+    ]
+  }
+]

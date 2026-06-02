@@ -1,0 +1,6 @@
+{
+  "name": "Pivní Mapa",
+  "description": "Interaktivní mapa českých hospod, restaurací a čepovaných piv s přehledem stupňů a cen.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
