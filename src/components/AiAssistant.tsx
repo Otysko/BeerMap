@@ -7,26 +7,83 @@ import React, { useState, useRef, useEffect } from "react";
 import { ChatMessage } from "../types";
 import { Send, Sparkles, MessageSquare, Trash2, Loader2, RefreshCw, AlertCircle, X } from "lucide-react";
 
-// Helper to format basic markdown bold (**) and italic (*) elements and strip raw asterisks cleanly in React
+// Helper to format basic markdown (headers, item lines, bold, italic, code) cleanly in React
 export function formatMessageText(text: string) {
   if (!text) return "";
-  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={i} className="font-bold text-amber-500">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    } else if (part.startsWith("*") && part.endsWith("*")) {
-      return (
-        <em key={i} className="italic text-slate-300">
-          {part.slice(1, -1)}
-        </em>
-      );
+
+  const renderInline = (str: string) => {
+    if (!str) return "";
+    if (!str.includes("**") && !str.includes("*") && !str.includes("`")) {
+      return str;
     }
-    return part;
-  });
+    const parts = str.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+        return (
+          <strong key={i} className="font-bold text-amber-500">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+        return (
+          <em key={i} className="italic text-amber-100/90 font-normal">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+      if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+        return (
+          <code key={i} className="font-mono bg-slate-950/80 px-1 py-0.5 rounded text-amber-400 text-xs border border-amber-500/10">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      return part;
+    });
+  };
+
+  const lines = text.split("\n");
+  return (
+    <div className="space-y-1.5 text-slate-200">
+      {lines.map((line, idx) => {
+        // Headers (e.g., # Header, ## Header, ### Header)
+        const headerMatch = line.match(/^(#{1,6})\s+(.*)$/);
+        if (headerMatch) {
+          const content = headerMatch[2];
+          return (
+            <div key={idx} className="font-display font-bold text-amber-500 text-xs uppercase tracking-wider mt-4 mb-2 first:mt-0 leading-snug">
+              {renderInline(content)}
+            </div>
+          );
+        }
+
+        // List items (starts with *, -, + or bullet point •)
+        const listMatch = line.match(/^(\s*[-*+•]\s+)(.*)$/);
+        if (listMatch) {
+          const content = listMatch[2];
+          return (
+            <div key={idx} className="flex items-start gap-2 ml-1 text-slate-300">
+              <span className="text-amber-500 select-none text-[10px] mt-1.5">●</span>
+              <div className="flex-grow">{renderInline(content)}</div>
+            </div>
+          );
+        }
+
+        // Handle general empty lines to render clean structural spacing
+        if (line.trim() === "") {
+          return <div key={idx} className="h-2" />;
+        }
+
+        // Standard text lines
+        return (
+          <div key={idx} className="break-words leading-relaxed">
+            {renderInline(line)}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 interface AiAssistantProps {
@@ -117,8 +174,6 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isOpen]);
-
-  if (!isOpen) return null;
 
   const handleSendMessage = async (customText?: string) => {
     const textToSend = customText || input.trim();
@@ -256,7 +311,7 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
               {m.role === "user" ? "Vy" : "Hospodský Kecal"} • {m.timestamp}
             </span>
             <div
-              className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line break-words overflow-hidden max-w-full shadow-md ${
+              className={`rounded-2xl px-4 py-3 text-sm leading-relaxed break-words overflow-hidden max-w-full shadow-md ${
                 m.role === "user"
                   ? "bg-slate-800 border border-slate-700 text-slate-100 rounded-tr-none"
                   : "bg-slate-900 border border-amber-500/15 text-slate-200 rounded-tl-none pr-6"

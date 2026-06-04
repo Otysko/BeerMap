@@ -938,14 +938,12 @@ export default function App() {
             isAiOpen ? "w-full md:w-[380px] border-l border-amber-500/30" : "w-0 overflow-hidden border-l-0 pointer-events-none invisible opacity-0"
           }`}
         >
-          {isAiOpen && (
-            <AiAssistant
-              isOpen={isAiOpen}
-              onClose={() => setIsAiOpen(false)}
-              userLatLng={userLocation}
-              favoriteBeerName={passport?.favoriteBeerName}
-            />
-          )}
+          <AiAssistant
+            isOpen={isAiOpen}
+            onClose={() => setIsAiOpen(false)}
+            userLatLng={userLocation}
+            favoriteBeerName={passport?.favoriteBeerName}
+          />
         </aside>
 
         {/* 🏆 SLIDE-OUT RIGHT HAND DRAWER: PIVNÍ PAS (Beer Passport) */}
