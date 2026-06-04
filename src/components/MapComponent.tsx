@@ -17,6 +17,7 @@ interface MapComponentProps {
   userLocation: { lat: number; lng: number } | null;
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
+  onBoundsChange?: (bounds: { swLat: number; swLng: number; neLat: number; neLng: number } | null) => void;
 }
 
 export default function MapComponent({
@@ -29,6 +30,7 @@ export default function MapComponent({
   userLocation,
   isSidebarOpen,
   onToggleSidebar,
+  onBoundsChange,
 }: MapComponentProps) {
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -36,6 +38,12 @@ export default function MapComponent({
   const candidateMarkerRef = useRef<any>(null);
   const userLocationMarkerRef = useRef<any>(null);
   const selectedPubIdRef = useRef<string | null>(selectedPubId);
+  const [mapBounds, setMapBounds] = useState<any>(null);
+
+  const onBoundsChangeRef = useRef(onBoundsChange);
+  useEffect(() => {
+    onBoundsChangeRef.current = onBoundsChange;
+  }, [onBoundsChange]);
 
   // Keep ref in sync for event listeners
   useEffect(() => {
@@ -138,6 +146,45 @@ export default function MapComponent({
       onSelectPub(null); // Deselect currently active pub
     });
 
+    const handleBoundsChange = () => {
+      if (!mapInstanceRef.current && map) {
+        // Fallback reference if mapInstanceRef not fully set
+        const bounds = map.getBounds();
+        setMapBounds(bounds);
+        if (onBoundsChangeRef.current) {
+          const sw = bounds.getSouthWest();
+          const ne = bounds.getNorthEast();
+          onBoundsChangeRef.current({
+            swLat: sw.lat,
+            swLng: sw.lng,
+            neLat: ne.lat,
+            neLng: ne.lng
+          });
+        }
+        return;
+      }
+      const activeMap = mapInstanceRef.current;
+      if (!activeMap) return;
+      const bounds = activeMap.getBounds();
+      setMapBounds(bounds);
+      if (onBoundsChangeRef.current) {
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+        onBoundsChangeRef.current({
+          swLat: sw.lat,
+          swLng: sw.lng,
+          neLat: ne.lat,
+          neLng: ne.lng
+        });
+      }
+    };
+
+    map.on("moveend", handleBoundsChange);
+    map.on("zoomend", handleBoundsChange);
+    
+    // Initial bounds load
+    setTimeout(handleBoundsChange, 500);
+
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -151,16 +198,24 @@ export default function MapComponent({
     const map = mapInstanceRef.current;
     if (!map || !L) return;
 
-    // Clear existing active markers that are no longer in list
+    // Pad active bounds slightly so markers near the borders do not pop in/out aggressively on slight pan
+    const bounds = mapBounds ? mapBounds.pad(0.12) : null;
+    const visiblePubs = pubs.filter((pub) => {
+      if (pub.id === selectedPubId) return true;
+      if (!bounds) return true;
+      return bounds.contains([pub.lat, pub.lng]);
+    });
+
+    // Clear existing active markers that are no longer in visible list
     Object.keys(markersRef.current).forEach((pubId) => {
-      if (!pubs.find((p) => p.id === pubId)) {
+      if (!visiblePubs.find((p) => p.id === pubId)) {
         markersRef.current[pubId].remove();
         delete markersRef.current[pubId];
       }
     });
 
     // Add or update markers
-    pubs.forEach((pub) => {
+    visiblePubs.forEach((pub) => {
       const isSelected = pub.id === selectedPubId;
       
       // Calculate how many beers are tapped for simple badge number
@@ -233,7 +288,7 @@ export default function MapComponent({
         markersRef.current[pub.id] = marker;
       }
     });
-  }, [pubs, selectedPubId]);
+  }, [pubs, selectedPubId, mapBounds]);
 
   // 3. Pan map when selectedPub edits
   useEffect(() => {

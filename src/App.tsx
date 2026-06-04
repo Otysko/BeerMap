@@ -19,9 +19,17 @@ export default function App() {
   const [error, setError] = useState("");
 
   // Search & Filtering states
-  const [textFilter, setTextFilter] = useState("");
-  const [maxPriceFilter, setMaxPriceFilter] = useState<number>(120);
-  const [sortBy, setSortBy] = useState<"name" | "cheapestBeer" | "distance">("name");
+  const [textFilter, setTextFilter] = useState(() => {
+    return localStorage.getItem("pivnimapa_filter_text") || "";
+  });
+  const [maxPriceFilter, setMaxPriceFilter] = useState<number>(() => {
+    const cached = localStorage.getItem("pivnimapa_filter_maxprice");
+    return cached ? Number(cached) : 120;
+  });
+  const [sortBy, setSortBy] = useState<"name" | "cheapestBeer" | "distance">("distance");
+  
+  // Viewport/geographical boundary optimization states
+  const [mapBounds, setMapBounds] = useState<{ swLat: number; swLng: number; neLat: number; neLng: number } | null>(null);
   
   // Selection states
   const [selectedPubId, setSelectedPubId] = useState<string | null>(null);
@@ -140,6 +148,15 @@ export default function App() {
       localStorage.setItem("pivnimapa_passport_" + userProfile.email.toLowerCase().trim(), JSON.stringify(passport));
     }
   }, [passport, userProfile]);
+
+  // Save filter changes to localStorage
+  useEffect(() => {
+    localStorage.setItem("pivnimapa_filter_text", textFilter);
+  }, [textFilter]);
+
+  useEffect(() => {
+    localStorage.setItem("pivnimapa_filter_maxprice", String(maxPriceFilter));
+  }, [maxPriceFilter]);
 
   // Check and restore data from localStorage if Render server wiped filesystem
   const checkAndRestoreData = async (serverPubs: Pub[], email?: string, serverPassport?: any) => {
@@ -625,7 +642,7 @@ export default function App() {
             </div>
 
             {/* Price slider filter */}
-            <div className="space-y-1">
+            <div className="space-y-1 pb-2">
               <div className="flex justify-between text-[11px] text-slate-450 font-bold uppercase tracking-wide">
                 <span className="flex items-center gap-1">
                   <SlidersHorizontal className="w-3 h-3 text-amber-500" /> Max cena piva
@@ -817,7 +834,7 @@ export default function App() {
         {/* 🗺️ INTERACTIVE LEAFLET DISPLAY MAP CONTAINER */}
         <main className="flex-grow h-full relative z-10 bg-slate-950">
           <MapComponent
-            pubs={pubs}
+            pubs={filteredPubs}
             selectedPubId={selectedPubId}
             onSelectPub={(pubId) => {
               setSelectedPubId(pubId);
@@ -844,6 +861,7 @@ export default function App() {
             }}
             userLocation={userLocation}
             isSidebarOpen={isSidebarOpen}
+            onBoundsChange={setMapBounds}
             onToggleSidebar={() => {
               setIsSidebarOpen(!isSidebarOpen);
               if (!isSidebarOpen) {
