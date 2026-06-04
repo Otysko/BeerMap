@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, Mail, User, ShieldAlert, Sparkles } from "lucide-react";
 import { UserProfile } from "../types";
 
@@ -13,18 +13,24 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const [nameInput, setNameInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [isGisLoaded, setIsGisLoaded] = useState(false);
+  const [hasGoogleCredentials, setHasGoogleCredentials] = useState(false);
 
-  // Resilient check for iframes to prevent Cross-Origin SecurityErrors in strict mobile contexts
-  const [isIframe, setIsIframe] = useState(false);
+  // References to isolate Google's dynamic DOM additions from React's Virtual DOM eyes
+  const googleBtnParentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let client_id = "";
     try {
-      if (typeof window !== "undefined") {
-        setIsIframe(window.self !== window.top);
+      if (typeof import.meta !== "undefined" && (import.meta as any).env && (import.meta as any).env.VITE_GOOGLE_CLIENT_ID) {
+        client_id = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID;
       }
-    } catch (e) {
-      console.warn("Exception checking window context, defaulting to iframe sandbox:", e);
-      setIsIframe(true);
+    } catch (e) {}
+
+    // Check if a real client ID exists (not sample placeholders)
+    if (client_id && !client_id.includes("sampleclientid") && !client_id.includes("YOUR_") && !client_id.includes("MY_")) {
+      setHasGoogleCredentials(true);
+    } else {
+      setHasGoogleCredentials(false);
     }
   }, []);
 
@@ -46,34 +52,40 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     }
   };
 
-  // Dynamically load Google GIS script
+  // Dynamically load Google GIS script and isolate containers when Google GSI is active
   useEffect(() => {
-    if (!isOpen) return;
-
-    // Inside sandboxed iframe environments, Google GSI scripts fail under strict security policy contexts.
-    // We bypass GSI injection inside iframes to keep execution stable and 100% crash-proof.
-    if (isIframe) {
-      return;
-    }
+    if (!isOpen || !hasGoogleCredentials) return;
 
     const scriptId = "google-gsi-client-script";
     const existingScript = document.getElementById(scriptId);
+
+    // Create a button container dynamically under our parent ref to isolate DOM additions
+    const btnContainer = document.createElement("div");
+    btnContainer.id = "google-signin-btn-div";
+    btnContainer.style.width = "320px";
+    btnContainer.style.height = "45px";
+    btnContainer.style.display = "flex";
+    btnContainer.style.justifyContent = "center";
+    btnContainer.style.alignItems = "center";
+
+    if (googleBtnParentRef.current) {
+      googleBtnParentRef.current.innerHTML = "";
+      googleBtnParentRef.current.appendChild(btnContainer);
+    }
 
     const initializeGoogleSignIn = () => {
       if (typeof window !== "undefined" && (window as any).google) {
         setIsGisLoaded(true);
         try {
-          let client_id = "103681466023-sampleclientid.apps.googleusercontent.com"; // fallback
+          let client_id = "";
           try {
             if (typeof import.meta !== "undefined" && (import.meta as any).env && (import.meta as any).env.VITE_GOOGLE_CLIENT_ID) {
               client_id = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID;
             }
-          } catch (envErr) {
-            console.warn("Could not read import.meta.env, using default credentials.", envErr);
-          }
-          
+          } catch (envErr) {}
+
           if (!(window as any).google.accounts?.id) {
-            console.warn("Google GSI accounts SDK not fully loaded inside proxy.");
+            console.warn("Google GSI accounts SDK not fully loaded.");
             return;
           }
 
@@ -96,20 +108,16 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
             cancel_on_tap_outside: true,
           });
 
-          // Render Google Button in placeholder element
-          const gBtnContainer = document.getElementById("google-signin-btn-div");
-          if (gBtnContainer) {
-            (window as any).google.accounts.id.renderButton(gBtnContainer, {
-              theme: "dark",
-              size: "large",
-              text: "signin_with",
-              shape: "rectangular",
-              width: 320,
-            });
-          }
+          // Render Google Button in our dynamically-appended container
+          (window as any).google.accounts.id.renderButton(btnContainer, {
+            theme: "dark",
+            size: "large",
+            text: "signin_with",
+            shape: "rectangular",
+            width: 320,
+          });
         } catch (err) {
-          console.error("Error setting up Google GSI (this is expected in highly secure/sandboxed iframes):", err);
-          // Don't crash the modal, the user can use manual login
+          console.error("Error setting up Google GSI:", err);
         }
       }
     };
@@ -125,28 +133,34 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
           try {
             initializeGoogleSignIn();
           } catch (e) {
-            console.error("Uncaught error inside initializeGoogleSignIn onload:", e);
+            console.error("Uncaught error inside GSI onload:", e);
           }
         };
         script.onerror = (e) => {
-          console.warn("Failed to load Google Identity Services client in this frame:", e);
+          console.warn("Failed to load Google Identity Services script:", e);
         };
         document.body.appendChild(script);
       } catch (scriptErr) {
-        console.warn("Error inserting Google Identity Services script:", scriptErr);
+        console.warn("Error inserting Google script:", scriptErr);
       }
     } else {
-      // Small timeout to allow element rendering
       const t = setTimeout(() => {
         try {
           initializeGoogleSignIn();
         } catch (e) {
-          console.error("Uncaught error inside initializeGoogleSignIn timeout:", e);
+          console.error("Uncaught error inside GSI timer:", e);
         }
-      }, 100);
+      }, 150);
       return () => clearTimeout(t);
     }
-  }, [isOpen, isIframe]);
+
+    // Explicit cleanup cleans the innerHTML manually BEFORE React dismantles the DOM wrapper, preventing removeChild crashes completely!
+    return () => {
+      if (googleBtnParentRef.current) {
+        googleBtnParentRef.current.innerHTML = "";
+      }
+    };
+  }, [isOpen, hasGoogleCredentials]);
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,14 +201,14 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div className="w-full max-w-md bg-slate-900 border border-amber-500/30 rounded-3xl overflow-hidden shadow-2xl relative">
+      <div className="w-full max-w-md bg-slate-900 border border-amber-500/30 rounded-3xl overflow-hidden shadow-2xl relative max-h-[92dvh] flex flex-col">
         
         {/* Decorative elements */}
         <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-[-50px] left-[-50px] w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Modal Header */}
-        <div className="px-6 pt-6 pb-4 flex justify-between items-center border-b border-amber-500/20">
+        <div className="px-6 py-4 flex justify-between items-center border-b border-amber-500/20 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-xl">🍺</span>
             <h2 className="text-lg font-bold font-display text-slate-100">
@@ -209,9 +223,9 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
-          <p className="text-xs text-slate-350 leading-relaxed">
+        {/* Modal Body - Scrollable */}
+        <div className="p-6 space-y-5 overflow-y-auto flex-grow">
+          <p className="text-xs text-slate-350 leading-relaxed font-sans">
             Založ si vlastní **Osobní Pivní Pas**! Můžeš sbírat úspěchy, odemykat až 20 různých pivních odznáčků a uchovávat si kompletní přehled navštívených míst a piv, která jsi osobně vypil.
           </p>
 
@@ -229,21 +243,17 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
             </span>
             
             <div className="relative w-[320px] h-[45px] flex items-center justify-center bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-md font-display">
-              {/* This GSI container is safely separated from React's eyes using dangerouslySetInnerHTML, making it 100% immune to virtual DOM reconciliation conflicts or removeChild/appendChild crashes */}
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: '<div id="google-signin-btn-div" style="width: 320px; height: 45px; display: flex; justify-content: center; align-items: center;"></div>'
-                }}
-              />
-              
-              {!isGisLoaded && !isIframe && (
-                <div className="absolute inset-0 bg-slate-950 flex items-center justify-center gap-2 text-xs text-slate-400 pointer-events-none">
-                  <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-                  <span>Google klient se připravuje...</span>
-                </div>
-              )}
-
-              {isIframe && (
+              {hasGoogleCredentials ? (
+                <>
+                  <div ref={googleBtnParentRef} className="w-[320px] h-[45px] flex items-center justify-center" />
+                  {!isGisLoaded && (
+                    <div className="absolute inset-0 bg-slate-950 flex items-center justify-center gap-2 text-xs text-slate-400 pointer-events-none">
+                      <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Google klient se připravuje...</span>
+                    </div>
+                  )}
+                </>
+              ) : (
                 <button
                   type="button"
                   onClick={() => {
@@ -254,7 +264,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                     });
                     onClose();
                   }}
-                  className="absolute inset-0 bg-slate-950 hover:bg-slate-900 flex items-center justify-center gap-3 transition cursor-pointer"
+                  className="absolute inset-0 bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/30 rounded-xl flex items-center justify-center gap-3 transition cursor-pointer group"
                 >
                   <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
                     <path
@@ -274,7 +284,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.08l3.66 2.84c.87-2.6 3.3-4.54 6.16-4.54z"
                     />
                   </svg>
-                  <span className="text-xs font-bold text-slate-250">
+                  <span className="text-xs font-bold text-slate-250 group-hover:text-amber-500 transition">
                     Přihlásit se jako David (Google Demo)
                   </span>
                 </button>
@@ -282,7 +292,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
             </div>
           </div>
 
-          <div className="relative flex py-2 items-center">
+          <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-slate-800"></div>
             <span className="flex-shrink mx-3 text-slate-500 text-[10px] font-bold uppercase tracking-wider">Nebo přímé přihlášení</span>
             <div className="flex-grow border-t border-slate-800"></div>
@@ -290,8 +300,8 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
           {/* Quick Manual Login Form */}
           <form onSubmit={handleEmailSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+            <div className="space-y-1.5 font-sans">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1 font-sans">
                 <Mail className="w-3.5 h-3.5 text-amber-500/80" /> E-mailová adresa (pro uložení dat)
               </label>
               <input
@@ -303,7 +313,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 font-sans">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
                 <User className="w-3.5 h-3.5 text-amber-500/80" /> Jméno nebo přezdívka
               </label>
@@ -328,7 +338,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
         </div>
 
         {/* Modal Footer Info */}
-        <div className="bg-slate-950/80 px-6 py-3.5 border-t border-slate-850/80 text-[10px] text-slate-500 text-center">
+        <div className="bg-slate-950/80 px-6 py-3.5 border-t border-slate-850/80 text-[10px] text-slate-500 text-center flex-shrink-0">
           Vaše pivní skóre se bezpečně ukládá v našem sládkově archivu podle vašeho uníkátního profilu.
         </div>
 
@@ -336,3 +346,4 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     </div>
   );
 }
+

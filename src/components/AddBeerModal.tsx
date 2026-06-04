@@ -128,45 +128,45 @@ export default function AddBeerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-amber-500/30 rounded-2xl overflow-hidden shadow-2xl animate-scaleIn">
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+      <div className="relative w-full max-w-lg max-h-[95dvh] flex flex-col bg-slate-900 border border-amber-500/30 rounded-2xl overflow-hidden shadow-2xl animate-scaleIn">
         
         {/* Header */}
-        <div className="flex justify-between items-center bg-gradient-to-r from-slate-905 to-slate-900 px-6 py-4 border-b border-slate-800/80">
-          <h2 className="text-lg font-display font-bold text-amber-500 flex items-center gap-2">
+        <div className="flex-shrink-0 flex justify-between items-center bg-gradient-to-r from-slate-905 to-slate-900 px-4 sm:px-6 py-4 border-b border-slate-800/80">
+          <h2 className="text-base sm:text-lg font-display font-bold text-amber-500 flex items-center gap-2">
             <BeerIcon className="w-5 h-5 text-amber-500" />
             {editingBeer ? "Upravit pivo" : "Přidat čepované pivo"}
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Form */}
-        <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
+        {/* Scrollable Content Form */}
+        <form onSubmit={handleFormSubmit} className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4">
           
           {/* Beer Name + AI suggestion action */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
               Název piva <span className="text-red-400">*</span>
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 required
                 placeholder="Např. Pilsner Urquell, Kozel..."
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="flex-grow bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-550"
+                className="flex-grow bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-550"
               />
               <button
                 type="button"
                 onClick={handleAiAutocomplete}
                 disabled={aiLoading || !name.trim()}
-                className="flex items-center gap-1 px-3 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 hover:text-slate-950 font-bold text-xs rounded-xl transition duration-200 cursor-pointer disabled:cursor-not-allowed shadow-lg shadow-amber-500/10"
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 hover:text-slate-950 font-bold text-xs rounded-xl transition duration-200 cursor-pointer disabled:cursor-not-allowed shadow-lg shadow-amber-500/10 whitespace-nowrap"
               >
                 {aiLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -181,10 +181,10 @@ export default function AddBeerModal({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 font-sans">
             {/* Degrees */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider font-sans">
                 Stupňovitost (EPM)
               </label>
               <input
@@ -198,7 +198,7 @@ export default function AddBeerModal({
             </div>
 
             {/* Price */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 font-sans">
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                 Cena (Kč za půllitr) <span className="text-red-400">*</span>
               </label>
@@ -219,7 +219,7 @@ export default function AddBeerModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 font-sans">
             {/* Style */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
@@ -250,7 +250,7 @@ export default function AddBeerModal({
           </div>
 
           {/* Description */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 font-sans">
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
               Chuť nebo poznámka (volitelné)
             </label>
@@ -258,33 +258,33 @@ export default function AddBeerModal({
               placeholder="Např. Hořké, hutná smetanová pěna, čepované z tanku..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full h-18 resize-none bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl px-3 py-2 text-sm text-slate-100"
+              className="w-full h-18 resize-none bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl px-3 py-2 text-sm text-slate-100 font-sans"
             />
           </div>
 
           {/* Prompt/Guide */}
-          <div className="p-3 bg-slate-950 border border-slate-800/60 rounded-xl flex items-start gap-2">
+          <div className="p-3 bg-slate-950 border border-slate-800/65 rounded-xl flex items-start gap-2 font-sans">
             <HelpCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-[10px] text-slate-400 leading-relaxed">
-              <strong>Tip sládka:</strong> Tlačítko <strong className="text-emerald-400">Doplnit s AI</strong> využívá model 
-              Gemini ke stažení typických hodnot. Stačí napsat název (třeba <em>"Kozel 11"</em>, <em>"Radegast Ryze Hořká"</em>) a kliknout!
+              <strong>Tip sládka:</strong> Tlačítko <strong className="text-amber-500">Doplnit s AI</strong> využívá model 
+              Gemini ke stažení typických hodnot. Stačí napsat název a kliknout!
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-2 font-sans">
             <button
               type="button"
               onClick={onClose}
               disabled={saveLoading}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-xl transition cursor-pointer"
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-250 text-sm font-semibold rounded-xl transition cursor-pointer"
             >
               Zpět
             </button>
             <button
               type="submit"
               disabled={saveLoading || !name.trim() || price === ""}
-              className="flex items-center gap-1.5 px-5 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold text-sm rounded-xl transition cursor-pointer"
+              className="flex items-center gap-1.5 px-5 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold text-sm rounded-xl transition cursor-pointer whitespace-nowrap"
             >
               {saveLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
