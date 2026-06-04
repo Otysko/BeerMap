@@ -108,7 +108,7 @@ export default function MapComponent({
         (error) => {
           console.warn("Geolocation permission declined or failed:", error);
         },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
       );
     }
 
@@ -390,7 +390,7 @@ export default function MapComponent({
         (error) => {
           console.warn("Geolocation centering failed:", error);
         },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
       );
     }
   };
@@ -414,7 +414,7 @@ export default function MapComponent({
         .addTo(map);
     }
 
-    userLocationMarkerRef.current.bindPopup("<strong>Jste zde (simulace)</strong>").openPopup();
+    userLocationMarkerRef.current.bindPopup("<strong>Jste zde</strong>").openPopup();
     mapInstanceRef.current.setView([userLocation.lat, userLocation.lng], 15);
   }, [userLocation]);
 

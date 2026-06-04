@@ -67,31 +67,115 @@ export default function App() {
   };
 
   // 1. Fetch all pubs from Express API
-  const fetchPubs = async () => {
+  const fetchPubs = async (): Promise<Pub[]> => {
     try {
       const res = await fetch("/api/pubs");
       if (!res.ok) throw new Error("Chyba při komunikaci s databází.");
       const data = await res.json();
       setPubs(data || []);
       setError("");
+      return data || [];
     } catch (err: any) {
       console.error(err);
       setError("Nepodařilo se načíst databázi hospod. Zkontrolujte připojení k serveru.");
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
   // Fetch passport data for a user email
-  const fetchPassportData = async (email: string) => {
+  const fetchPassportData = async (email: string): Promise<any> => {
     try {
       const res = await fetch(`/api/passports/${encodeURIComponent(email)}`);
       if (res.ok) {
         const data = await res.json();
         setPassport(data);
+        return data;
       }
     } catch (err) {
       console.error("Failed to fetch user passport:", err);
+    }
+    return null;
+  };
+
+  // Keep local backups up to date whenever pubs or passport updates
+  useEffect(() => {
+    if (pubs && pubs.length > 0) {
+      localStorage.setItem("pivnimapa_pubs", JSON.stringify(pubs));
+    }
+  }, [pubs]);
+
+  useEffect(() => {
+    if (passport && userProfile?.email) {
+      localStorage.setItem("pivnimapa_passport_" + userProfile.email.toLowerCase().trim(), JSON.stringify(passport));
+    }
+  }, [passport, userProfile]);
+
+  // Check and restore data from localStorage if Render server wiped filesystem
+  const checkAndRestoreData = async (serverPubs: Pub[], email?: string, serverPassport?: any) => {
+    let pubsToSync: Pub[] | null = null;
+    let passportsToSync: Record<string, any> | null = null;
+
+    // 1. Check if local pub backup has more pubs
+    try {
+      const localPubsStr = localStorage.getItem("pivnimapa_pubs");
+      if (localPubsStr) {
+        const localPubs = JSON.parse(localPubsStr) as Pub[];
+        if (Array.isArray(localPubs) && localPubs.length > serverPubs.length) {
+          pubsToSync = localPubs;
+        }
+      }
+    } catch (e) {
+      console.warn("Error reading local pub backup:", e);
+    }
+
+    // 2. Check if local passport has visits whereas server returned a fresh empty/fewer visits passport
+    if (email) {
+      try {
+        const lowerEmail = email.toLowerCase().trim();
+        const localPassportStr = localStorage.getItem("pivnimapa_passport_" + lowerEmail);
+        if (localPassportStr) {
+          const localPassport = JSON.parse(localPassportStr);
+          if (localPassport && Array.isArray(localPassport.visits) && localPassport.visits.length > 0) {
+            const serverVisitsCount = serverPassport && Array.isArray(serverPassport.visits) ? serverPassport.visits.length : 0;
+            if (localPassport.visits.length > serverVisitsCount) {
+              passportsToSync = {
+                [lowerEmail]: localPassport
+              };
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Error reading local passport backup:", e);
+      }
+    }
+
+    // 3. If any data needs syncing back, push to server!
+    if (pubsToSync || passportsToSync) {
+      console.log("[Sync] Disk wipe detected. Restoring from client's browser local storage...", {
+        pubsNum: pubsToSync?.length,
+        passportsNum: passportsToSync ? Object.keys(passportsToSync).length : 0
+      });
+      try {
+        const res = await fetch("/api/sync-restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pubs: pubsToSync,
+            passports: passportsToSync
+          })
+        });
+        if (res.ok) {
+          console.log("[Sync] Data restored successfully!");
+          await fetchPubs();
+          if (email) {
+            await fetchPassportData(email);
+          }
+        }
+      } catch (e) {
+        console.error("[Sync] Error running sync restore:", e);
+      }
     }
   };
 
@@ -189,22 +273,30 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchPubs();
-
-    // Load cached passport user profile if any
-    const cachedUser = localStorage.getItem("pivnimapa_user");
-    if (cachedUser) {
-      try {
-        const parsed = JSON.parse(cachedUser);
-        if (parsed && parsed.email) {
-          setUserProfile(parsed);
-          fetchPassportData(parsed.email);
+    const init = async () => {
+      const serverPubs = await fetchPubs();
+      
+      const cachedUser = localStorage.getItem("pivnimapa_user");
+      let activeEmail: string | undefined;
+      let serverPassport: any = null;
+      if (cachedUser) {
+        try {
+          const parsed = JSON.parse(cachedUser);
+          if (parsed && parsed.email) {
+            setUserProfile(parsed);
+            activeEmail = parsed.email;
+            serverPassport = await fetchPassportData(parsed.email);
+          }
+        } catch (err) {
+          console.error("Failed to parse cached user:", err);
         }
-      } catch (err) {
-        console.error("Failed to parse cached user:", err);
       }
-    }
-    
+
+      await checkAndRestoreData(serverPubs, activeEmail, serverPassport);
+    };
+
+    init();
+
     // Acquire user location for contextual AI references
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((pos) => {
@@ -373,19 +465,12 @@ export default function App() {
             setSortBy("distance");
           },
           (err) => {
-            // Geolocation failed or blocked - auto-simulate Prague center for smooth testing in IFrames
-            const pragueCenter = { lat: 50.0818, lng: 14.4286 };
-            setUserLocation(pragueCenter);
-            setSortBy("distance");
-            alert("Přístup k poloze byl zablokován prohlížečem (časté v bezpečných iframe náhledech).\n\nPro účely snadného testování jsme vám nasimulovali výchozí polohu v centru Prahy! Nyní můžete seřadit hospody podle vzdálenosti, vybrat libovolné místo na mapě a kliknout na tlačítko '📍 Simulovat příchod' přímo v detailu hospody.");
+            alert("Přístup k poloze byl odmítnut nebo se její zaměření nezdařilo. Pro řazení podle vzdálenosti prosím povolte přístup k GPS v nastavení.");
           },
-          { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+          { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
         );
       } else {
-        const pragueCenter = { lat: 50.0818, lng: 14.4286 };
-        setUserLocation(pragueCenter);
-        setSortBy("distance");
-        alert("Prohlížeč nepodporuje geolokaci. Nasimulovali jsme vám polohu v Praze pro otestování.");
+        alert("Váš prohlížeč nepodporuje geolokační služby.");
       }
     } else {
       setSortBy("distance");

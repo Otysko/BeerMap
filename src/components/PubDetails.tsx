@@ -236,15 +236,6 @@ export default function PubDetails({
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2 justify-end flex-wrap">
-                      <button
-                        onClick={() => onSimulateLocation(pub.lat, pub.lng)}
-                        className="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-amber-500/25 text-[10px] text-amber-500 font-black uppercase rounded-xl transition flex items-center gap-1 cursor-pointer"
-                        title="Simulovat pozici přímo u této hospody"
-                      >
-                        <Navigation className="w-3.5 h-3.5" /> Simulovat příchod
-                      </button>
-                    </div>
                   </div>
                 );
               }
@@ -428,7 +419,7 @@ export default function PubDetails({
                         const distKm = userLocation ? calculateDistanceInKm(userLocation.lat, userLocation.lng, pub.lat, pub.lng) : null;
                         const distM = distKm !== null ? Math.round(distKm * 1000) : null;
                         if (distM === null || distM > 200) {
-                          alert(`Tento kousek si můžeš zapsat jen přímo v hospodě (do 200 m). Aktuálně jsi ve vzdálenosti: ${distM !== null ? `${distM} m` : "neznámé"}.\n\nTip: Klikni nahoře v panelu na "Simulovat příchod" a pak si pivo vesele zapiš! 😉`);
+                          alert(`Tento kousek si můžeš zapsat jen přímo v hospodě (do 200 m). Aktuálně jsi ve vzdálenosti: ${distM !== null ? `${distM} m` : "neznámé"}. Přijď blíž a dej si jedno točené! 🍻`);
                           return;
                         }
                         setIsLoggingVisit(true);

@@ -588,6 +588,26 @@ app.post("/api/passports/:email/favorite-beer", (req, res) => {
 });
 
 
+// Bulk sync-restore from client's localStorage to protect against Render.com ephemeral disk wipes
+app.post("/api/sync-restore", (req, res) => {
+  const { pubs, passports } = req.body;
+  
+  if (Array.isArray(pubs) && pubs.length > 0) {
+    writePubsToDb(pubs);
+    console.log(`[Sync] Restored ${pubs.length} pubs to database.`);
+  }
+  
+  if (passports && typeof passports === "object" && Object.keys(passports).length > 0) {
+    const currentPassports = readPassportsFromDb();
+    const merged = { ...currentPassports, ...passports };
+    writePassportsToDb(merged);
+    console.log(`[Sync] Restored ${Object.keys(passports).length} passports to database.`);
+  }
+  
+  res.json({ success: true });
+});
+
+
 // Vite middleware integration for full-stack build
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
