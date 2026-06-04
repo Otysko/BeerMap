@@ -42,6 +42,7 @@ export interface UserProfile {
   email: string;
   name: string;
   picture?: string;
+  password?: string;
 }
 
 export interface BeerVisit {

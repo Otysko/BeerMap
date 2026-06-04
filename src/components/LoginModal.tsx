@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Mail, User, ShieldAlert, Sparkles } from "lucide-react";
+import { X, Mail, User, Lock, ShieldAlert, Sparkles } from "lucide-react";
 import { UserProfile } from "../types";
 
 interface LoginModalProps {
@@ -10,7 +10,8 @@ interface LoginModalProps {
 
 export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps) {
   const [emailInput, setEmailInput] = useState("");
-  const [nameInput, setNameInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isGisLoaded, setIsGisLoaded] = useState(false);
   const [hasGoogleCredentials, setHasGoogleCredentials] = useState(false);
@@ -162,12 +163,12 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     };
   }, [isOpen, hasGoogleCredentials]);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
 
     const trimmedEmail = emailInput.trim().toLowerCase();
-    const trimmedName = nameInput.trim();
+    const trimmedPassword = passwordInput.trim();
 
     if (!trimmedEmail) {
       setErrorMsg("Zadejte prosím platný e-mail.");
@@ -177,24 +178,50 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
       setErrorMsg("E-mail musí obsahovat znak zavináče (@).");
       return;
     }
-    if (!trimmedName) {
-      setErrorMsg("Zadejte prosím své jméno nebo přezdívku.");
+    if (!trimmedPassword) {
+      setErrorMsg("Zadejte prosím přístupové heslo.");
+      return;
+    }
+    if (trimmedPassword.length < 4) {
+      setErrorMsg("Heslo musí mít z bezpečnostních důvodů délku alespoň 4 znaky.");
       return;
     }
 
-    const isBlondMale = trimmedName.toLowerCase().includes("david") || trimmedName.toLowerCase().includes("kuncar");
-    const mockProfilePicture = isBlondMale
-      ? `https://api.dicebear.com/7.x/avataaars/svg?seed=blondeMaleUser&top[]=shortRound&hairColor[]=e8c170&skinColor[]=ffdbac`
-      : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(trimmedName)}`;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password: trimmedPassword
+        })
+      });
 
-    const user: UserProfile = {
-      email: trimmedEmail,
-      name: trimmedName,
-      picture: mockProfilePicture,
-    };
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setErrorMsg(data.error || "Přihlášení se nezdařilo.");
+        setIsSubmitting(false);
+        return;
+      }
 
-    onLoginSuccess(user);
-    onClose();
+      const user: UserProfile = {
+        email: data.user.email,
+        name: data.user.name,
+        password: data.user.password,
+      };
+
+      onLoginSuccess(user);
+      onClose();
+    } catch (err) {
+      console.error("Manual login request failed:", err);
+      setErrorMsg("Nepodařilo se připojit k pivnímu serveru. Zkuste to za chvíli.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -224,9 +251,9 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
         </div>
 
         {/* Modal Body - Scrollable */}
-        <div className="p-6 space-y-5 overflow-y-auto flex-grow">
+        <div className="p-6 space-y-5 overflow-y-auto flex-grow animate-fadeIn">
           <p className="text-xs text-slate-350 leading-relaxed font-sans">
-            Založ si vlastní **Osobní Pivní Pas**! Můžeš sbírat úspěchy, odemykat až 20 různých pivních odznáčků a uchovávat si kompletní přehled navštívených míst a piv, která jsi osobně vypil.
+            Založ si vlastní <strong className="text-amber-500 font-bold">Osobní Pivní Pas</strong>! Můžeš sbírat úspěchy, odemykat až 20 různých pivních odznáčků a uchovávat si kompletní přehled navštívených míst a piv, která jsi osobně vypil.
           </p>
 
           {errorMsg && (
@@ -272,29 +299,47 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                 placeholder="napr. stamgast@seznam.cz"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition"
+                disabled={isSubmitting}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
               />
             </div>
 
             <div className="space-y-1.5 font-sans">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-amber-500/80" /> Jméno nebo přezdívka
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5 text-amber-500/80" /> Bezpečnostní heslo
+                </label>
+                <span className="text-[9px] text-slate-500 font-semibold">(min. 4 znaky)</span>
+              </div>
               <input
-                type="text"
-                placeholder="napr. Pepa Novák"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition"
+                type="password"
+                placeholder="••••••••"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                disabled={isSubmitting}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
               />
+              <p className="text-[9px] text-slate-450 leading-tight">
+                Pokud vytváříte nový pas, heslo si zvolte. Pokud se vracíte ke svému již založenému pasu, zadejte své heslo.
+              </p>
             </div>
 
             <button
               type="submit"
-              className="w-full py-2.5 mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-bold font-display text-sm hover:shadow-lg hover:shadow-amber-500/10 cursor-pointer transition flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+              className="w-full py-2.5 mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-bold font-display text-sm hover:shadow-lg hover:shadow-amber-500/10 cursor-pointer transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <Sparkles className="w-4 h-4 stroke-[2.5]" />
-              Aktivovat Pivní pas
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                  Ověřování...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 stroke-[2.5]" />
+                  Aktivovat Pivní pas
+                </>
+              )}
             </button>
           </form>
 

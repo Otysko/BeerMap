@@ -25,7 +25,9 @@ import {
   Sun,
   Sword,
   CheckCircle2,
-  BarChart3
+  BarChart3,
+  Edit2,
+  Check
 } from "lucide-react";
 import { UserProfile, UserPassport } from "../types";
 import { getAchievements } from "../lib/achievements";
@@ -66,6 +68,22 @@ function RenderAchievementIcon({ iconName, unlocked }: { iconName: string; unloc
   }
 }
 
+export function getStamgastRank(visitedPubCount: number) {
+  if (visitedPubCount === 0) {
+    return { title: "Nováček", color: "text-slate-400 bg-slate-500/10 border-slate-500/20" };
+  }
+  if (visitedPubCount < 3) {
+    return { title: "Učeň štamgasta", color: "text-blue-400 bg-blue-500/10 border-blue-500/20" };
+  }
+  if (visitedPubCount < 7) {
+    return { title: "Štamgast", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20 animate-pulse" };
+  }
+  if (visitedPubCount < 12) {
+    return { title: "Vele-štamgast", color: "text-purple-400 bg-purple-500/10 border-purple-550/20 font-bold" };
+  }
+  return { title: "Pivní legenda 👑", color: "text-amber-400 bg-amber-500/10 border-amber-500/20 font-extrabold shadow-sm shadow-amber-550/5" };
+}
+
 export function BeerPassport({ 
   isOpen, 
   onClose, 
@@ -82,10 +100,10 @@ export function BeerPassport({
   const [isSavingFav, setIsSavingFav] = useState(false);
   const [deletingVisitId, setDeletingVisitId] = useState<string | null>(null);
   
-  // Profile customizer states
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [newNameInput, setNewNameInput] = useState(userProfile.name);
-
+  // Inline name editing states
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newNameInput, setNewNameInput] = useState(userProfile.name || "");
+  
   // Pagination limits for long lists
   const [placesLimit, setPlacesLimit] = useState(15);
   const [historyLimit, setHistoryLimit] = useState(15);
@@ -186,6 +204,9 @@ export function BeerPassport({
     }
   };
 
+  const initialChar = (userProfile.name ? userProfile.name.trim() : userProfile.email.trim()).charAt(0).toUpperCase();
+  const rank = getStamgastRank(passport.visitedPubIds ? passport.visitedPubIds.length : 0);
+
   return (
     <div className="w-full h-full flex flex-col bg-slate-900 border-l border-amber-500/30 text-slate-100 shadow-2xl overflow-y-auto scrollbar-thin z-25 relative">
       
@@ -193,54 +214,76 @@ export function BeerPassport({
       <div className="px-6 py-5 bg-gradient-to-r from-amber-500/15 to-slate-900 border-b border-amber-500/20">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3.5">
-            <button
-              onClick={() => setIsEditingProfile(!isEditingProfile)}
-              title="Změnit avatar / jméno"
-              className="relative group w-13 h-13 rounded-2xl overflow-hidden ring-2 ring-amber-500/30 hover:ring-amber-450 bg-slate-950 block focus:outline-none cursor-pointer flex-shrink-0"
-            >
-              {userProfile.picture ? (
-                <img
-                  src={userProfile.picture}
-                  alt={userProfile.name}
-                  referrerPolicy="no-referrer; same-origin"
-                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
-                />
+            {/* Round initial badge */}
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 flex items-center justify-center font-display font-black text-xl shadow-lg ring-2 ring-amber-500/30 select-none flex-shrink-0 animate-scaleIn">
+              {initialChar}
+            </div>
+            <div>
+              {isEditingName ? (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <input
+                    type="text"
+                    value={newNameInput}
+                    onChange={(e) => setNewNameInput(e.target.value)}
+                    className="bg-slate-950 border border-amber-500/35 rounded-md text-[11px] px-1.5 py-0.5 text-slate-100 outline-none w-28 focus:shadow-sm focus:border-amber-500/50"
+                    maxLength={20}
+                    autoFocus
+                  />
+                  <button
+                    onClick={async () => {
+                      if (newNameInput.trim()) {
+                        if (onUpdateUserProfile) {
+                          await onUpdateUserProfile({
+                            ...userProfile,
+                            name: newNameInput.trim()
+                          });
+                        }
+                        setIsEditingName(false);
+                      }
+                    }}
+                    className="p-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-md hover:bg-green-500/20 transition cursor-pointer"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewNameInput(userProfile.name || "");
+                      setIsEditingName(false);
+                    }}
+                    className="p-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded-md hover:bg-red-500/20 transition cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-amber-500">
-                  <User className="w-6 h-6" />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h3 
+                    onClick={() => {
+                      setNewNameInput(userProfile.name || "");
+                      setIsEditingName(true);
+                    }}
+                    title="Klikni pro změnu přezdívky"
+                    className="text-sm font-bold text-slate-100 uppercase tracking-wide font-display hover:text-amber-500 cursor-pointer flex items-center gap-1 transition select-none"
+                  >
+                    {userProfile.name || userProfile.email.split("@")[0]}
+                    <Edit2 className="w-3 h-3 text-slate-500 hover:text-amber-500" />
+                  </h3>
+                  <span className={`text-[9px] border px-1.5 py-0.5 rounded-md font-bold uppercase select-none transition-all duration-300 ${rank.color}`}>
+                    {rank.title}
+                  </span>
                 </div>
               )}
-              {/* Overlaid edit indicator */}
-              <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[8px] text-amber-400 font-bold tracking-tight transition-opacity duration-150">
-                <span>Upravit</span>
-              </div>
-            </button>
-            <div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide font-display">
-                  {userProfile.name}
-                </h3>
-                <span className="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-440 px-1.5 py-0.5 rounded-md font-bold uppercase select-none">
-                  Štamgast
-                </span>
-              </div>
               <p className="text-[10px] text-slate-400 mt-0.5 max-w-[175px] truncate">
                 {userProfile.email}
               </p>
               
               <div className="flex items-center gap-1.5 mt-2">
                 <button
-                  onClick={() => setIsEditingProfile(!isEditingProfile)}
-                  className="flex items-center gap-0.5 text-[9.5px] font-bold text-amber-500 hover:text-amber-400 transition cursor-pointer select-none border border-amber-500/15 hover:border-amber-500/30 bg-amber-500/5 px-2 py-0.5 rounded-md"
-                >
-                  Nastavení vzhledu
-                </button>
-                <button
                   onClick={onLogout}
-                  className="flex items-center gap-1 text-[9.5px] font-bold text-red-400 hover:text-red-500 transition cursor-pointer select-none border border-red-500/15 hover:border-red-500/30 bg-red-500/5 px-2 py-0.5 rounded-md"
+                  className="flex items-center gap-1 text-[9.5px] font-bold text-red-400 hover:text-red-500 hover:bg-red-500/15 border border-red-500/15 hover:border-red-500/30 bg-red-500/5 px-2.5 py-1 rounded-md transition cursor-pointer select-none"
                 >
                   <LogOut className="w-2.5 h-2.5" />
-                  Odhlásit
+                  Odhlásit se
                 </button>
               </div>
             </div>
@@ -253,120 +296,6 @@ export function BeerPassport({
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {/* ⚙️ PROFILE CUSTOMIZER PANEL */}
-        {isEditingProfile && (
-          <div className="mt-1 mb-4 p-3.5 bg-slate-950/70 border border-amber-500/15 rounded-xl space-y-3 animate-fadeIn">
-            <h4 className="text-[10px] font-bold text-amber-500 uppercase tracking-wider block">
-              Nastavení vzhledu & jména štamgasta
-            </h4>
-            
-            {/* Name Input */}
-            <div className="space-y-1">
-              <label className="text-[9.5px] font-black text-slate-500 uppercase tracking-widest block">
-                Změnit přezdívku:
-              </label>
-              <input
-                type="text"
-                value={newNameInput}
-                onChange={(e) => setNewNameInput(e.target.value)}
-                placeholder="Zadej své jméno"
-                maxLength={25}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg text-xs px-2.5 py-1.5 text-slate-150 focus:border-amber-500/50 outline-none transition"
-              />
-            </div>
-
-            {/* Avatar Selector Grid */}
-            <div className="space-y-1">
-              <label className="text-[9.5px] font-black text-slate-500 uppercase tracking-widest block">
-                Zvol si svůj vzhled:
-              </label>
-              <div className="grid grid-cols-6 gap-1.5 pt-1">
-                {[
-                  {
-                    id: "blonde_male",
-                    name: "Štamgast (Blonďatý)",
-                    url: "https://api.dicebear.com/7.x/avataaars/svg?seed=blondeMaleUser&top[]=shortRound&hairColor[]=e8c170&skinColor[]=ffdbac"
-                  },
-                  {
-                    id: "blonde_female",
-                    name: "Štamgastka",
-                    url: "https://api.dicebear.com/7.x/avataaars/svg?seed=blondynaStamgast&top[]=longHair&hairColor[]=e8c170&skinColor[]=ffdbac"
-                  },
-                  {
-                    id: "initials_amber",
-                    name: "Moje Iniciály",
-                    url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userProfile.name)}&backgroundColor=f59e0b&textColor=0f172a&fontWeight=800`
-                  },
-                  {
-                    id: "pohar_gold",
-                    name: "Zlatý pohár (Abstraktní)",
-                    url: "https://api.dicebear.com/7.x/shapes/svg?seed=pivnikralcool&backgroundColor=f59e0b"
-                  },
-                  {
-                    id: "shield_emerald",
-                    name: "Smaragdová hvězda (Abstraktní)",
-                    url: "https://api.dicebear.com/7.x/shapes/svg?seed=pivnihvezda&backgroundColor=10b981"
-                  },
-                  {
-                    id: "pixel_head",
-                    name: "Retro štamgast (Pixel)",
-                    url: "https://api.dicebear.com/7.x/pixel-art/svg?seed=beerhead&backgroundColor=6366f1"
-                  }
-                ].map((av) => (
-                  <button
-                    key={av.id}
-                    title={av.name}
-                    type="button"
-                    onClick={() => {
-                      if (onUpdateUserProfile) {
-                        onUpdateUserProfile({
-                          ...userProfile,
-                          picture: av.url
-                        });
-                      }
-                    }}
-                    className={`aspect-square rounded-lg border overflow-hidden p-0 bg-slate-900 cursor-pointer transition flex items-center justify-center ${
-                      userProfile.picture === av.url 
-                        ? "border-amber-500 ring-2 ring-amber-500/20" 
-                        : "border-slate-800 hover:border-slate-700"
-                    }`}
-                  >
-                    <img src={av.url} alt={av.name} className="w-10/12 h-10/12 object-contain" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setNewNameInput(userProfile.name);
-                  setIsEditingProfile(false);
-                }}
-                className="text-[10px] font-bold text-slate-400 hover:text-slate-200 px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-md transition cursor-pointer"
-              >
-                Storno
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (onUpdateUserProfile) {
-                    onUpdateUserProfile({
-                      ...userProfile,
-                      name: newNameInput.trim() || userProfile.name
-                    });
-                  }
-                  setIsEditingProfile(false);
-                }}
-                className="text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-1 rounded-md transition cursor-pointer"
-              >
-                Uložit jméno
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Favorite Beer persistent form */}
         <div className="bg-slate-950/40 rounded-xl px-3 py-2 border border-slate-850 flex items-center justify-between text-xs mb-3">

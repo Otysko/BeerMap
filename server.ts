@@ -41,6 +41,32 @@ function writePassportsToDb(passports: Record<string, any>) {
   }
 }
 
+// Helper to check passport password authorization
+function authorizePassport(req: express.Request, email: string): boolean {
+  try {
+    const dbPassports = readPassportsFromDb();
+    const lowerEmail = email.toLowerCase().trim();
+    const passport = dbPassports[lowerEmail];
+    
+    // If no passport exist, anyone can create/initialize it initially
+    if (!passport) {
+      return true;
+    }
+    
+    // If passport has password set, check incoming header
+    if (passport.password) {
+      const incomingPassword = req.headers["x-passport-password"] || req.query.password || "";
+      if (passport.password !== incomingPassword) {
+        return false;
+      }
+    }
+    return true;
+  } catch (e) {
+    console.error("Error checking passport authorization:", e);
+    return false;
+  }
+}
+
 // Middleware
 app.use(express.json());
 
@@ -471,11 +497,79 @@ Pište stručně, lidově, poutavě. Používejte české pivní výrazy (piveč
 // 🍺 USER PASSPORT (PIVNÍ PAS) API ROUTES
 // ==========================================
 
+// Explicit Login / Authentication endpoint (Checks or register password)
+app.post("/api/login", (req, res) => {
+  const { email, name, password } = req.body;
+  
+  if (!email) {
+    res.status(400).json({ error: "E-mail je povinný údaj." });
+    return;
+  }
+
+  const dbPassports = readPassportsFromDb();
+  const lowerEmail = email.toLowerCase().trim();
+  const cleanPassword = (password || "").trim();
+
+  // 1. If passport does not exist yet, we will register it with chosen password
+  if (!dbPassports[lowerEmail]) {
+    dbPassports[lowerEmail] = {
+      userEmail: lowerEmail,
+      userName: name || lowerEmail.split("@")[0],
+      password: cleanPassword, // Store the password
+      visitedPubIds: [],
+      visits: [],
+      favoriteBeerName: ""
+    };
+    writePassportsToDb(dbPassports);
+    res.json({
+      success: true,
+      isNew: true,
+      user: {
+        email: lowerEmail,
+        name: dbPassports[lowerEmail].userName,
+        password: cleanPassword
+      }
+    });
+    return;
+  }
+
+  const existingPassport = dbPassports[lowerEmail];
+
+  // 2. If it has a password set, verify it matches
+  if (existingPassport.password) {
+    if (existingPassport.password !== cleanPassword) {
+      res.status(401).json({ error: "Zadané heslo pro tento e-mail není správné. Zadejte správné heslo nebo použijte jiný e-mail." });
+      return;
+    }
+  } else {
+    // 3. Backward compatibility: if no password exists yet on older database records, set it now!
+    existingPassport.password = cleanPassword;
+    if (name) {
+      existingPassport.userName = name;
+    }
+    writePassportsToDb(dbPassports);
+  }
+
+  res.json({
+    success: true,
+    isNew: false,
+    user: {
+      email: lowerEmail,
+      name: existingPassport.userName || name || lowerEmail.split("@")[0],
+      password: cleanPassword
+    }
+  });
+});
+
 // Get or initialize user passport
 app.get("/api/passports/:email", (req, res) => {
   const { email } = req.params;
   if (!email) {
     res.status(400).json({ error: "E-mail je povinný údaj." });
+    return;
+  }
+  if (!authorizePassport(req, email)) {
+    res.status(401).json({ error: "Neautorizovaný přístup k pivnímu pasu. Nesprávné heslo." });
     return;
   }
   const dbPassports = readPassportsFromDb();
@@ -492,12 +586,48 @@ app.get("/api/passports/:email", (req, res) => {
   res.json(dbPassports[lowerEmail]);
 });
 
+// Update username/profile details for passport
+app.post("/api/passports/:email/profile", (req, res) => {
+  const { email } = req.params;
+  const { name } = req.body;
+  
+  if (!email || !name) {
+    res.status(400).json({ error: "E-mail a přezdívka jsou povinné údaje." });
+    return;
+  }
+  
+  if (!authorizePassport(req, email)) {
+    res.status(401).json({ error: "Neautorizovaný přístup k pivnímu pasu. Nesprávné heslo." });
+    return;
+  }
+  
+  const dbPassports = readPassportsFromDb();
+  const lowerEmail = email.toLowerCase().trim();
+  
+  if (!dbPassports[lowerEmail]) {
+    res.status(404).json({ error: "Pivní pas nebyl nalezen." });
+    return;
+  }
+  
+  dbPassports[lowerEmail].userName = name.trim();
+  writePassportsToDb(dbPassports);
+  
+  res.json({
+    success: true,
+    name: dbPassports[lowerEmail].userName
+  });
+});
+
 // Log a visit to a pub / beer consumption
 app.post("/api/passports/:email/visits", (req, res) => {
   const { email } = req.params;
   const { pubId, pubName, beerId, beerName, degrees, style, brewery } = req.body;
   if (!email || !pubId || !pubName) {
     res.status(400).json({ error: "E-mail, ID hospody a název hospody jsou povinné údaje." });
+    return;
+  }
+  if (!authorizePassport(req, email)) {
+    res.status(401).json({ error: "Neautorizovaný přístup k pivnímu pasu. Nesprávné heslo." });
     return;
   }
   const dbPassports = readPassportsFromDb();
@@ -541,6 +671,10 @@ app.delete("/api/passports/:email/visits/:visitId", (req, res) => {
     res.status(400).json({ error: "E-mail a ID návštěvy jsou povinné údaje." });
     return;
   }
+  if (!authorizePassport(req, email)) {
+    res.status(401).json({ error: "Neautorizovaný přístup k pivnímu pasu. Nesprávné heslo." });
+    return;
+  }
   const dbPassports = readPassportsFromDb();
   const lowerEmail = email.toLowerCase().trim();
   if (!dbPassports[lowerEmail]) {
@@ -569,6 +703,10 @@ app.post("/api/passports/:email/favorite-beer", (req, res) => {
   const { favoriteBeerName } = req.body;
   if (!email) {
     res.status(400).json({ error: "E-mail je povinný údaj." });
+    return;
+  }
+  if (!authorizePassport(req, email)) {
+    res.status(401).json({ error: "Neautorizovaný přístup k pivnímu pasu. Nesprávné heslo." });
     return;
   }
   const dbPassports = readPassportsFromDb();

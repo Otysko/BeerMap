@@ -84,10 +84,39 @@ export default function App() {
     }
   };
 
+  // Help build authorization headers using cached or active user password
+  const getPassportHeaders = (pwd?: string) => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    let activePassword = pwd;
+    if (!activePassword && userProfile?.password) {
+      activePassword = userProfile.password;
+    }
+    if (!activePassword) {
+      try {
+        const cached = localStorage.getItem("pivnimapa_user");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.password) {
+            activePassword = parsed.password;
+          }
+        }
+      } catch (e) {}
+    }
+    if (activePassword) {
+      headers["X-Passport-Password"] = activePassword;
+    }
+    return headers;
+  };
+
   // Fetch passport data for a user email
-  const fetchPassportData = async (email: string): Promise<any> => {
+  const fetchPassportData = async (email: string, password?: string): Promise<any> => {
     try {
-      const res = await fetch(`/api/passports/${encodeURIComponent(email)}`);
+      const headers = getPassportHeaders(password);
+      const res = await fetch(`/api/passports/${encodeURIComponent(email)}`, {
+        headers
+      });
       if (res.ok) {
         const data = await res.json();
         setPassport(data);
@@ -183,7 +212,7 @@ export default function App() {
   const handleLoginSuccess = (profile: UserProfile) => {
     setUserProfile(profile);
     localStorage.setItem("pivnimapa_user", JSON.stringify(profile));
-    fetchPassportData(profile.email);
+    fetchPassportData(profile.email, profile.password);
     setIsLoginModalOpen(false);
   };
 
@@ -196,9 +225,22 @@ export default function App() {
   };
 
   // Handle Profile Update (e.g. name or portrait)
-  const handleUpdateUserProfile = (updated: UserProfile) => {
-    setUserProfile(updated);
-    localStorage.setItem("pivnimapa_user", JSON.stringify(updated));
+  const handleUpdateUserProfile = async (updated: UserProfile) => {
+    if (!userProfile) return;
+    try {
+      const res = await fetch(`/api/passports/${encodeURIComponent(updated.email)}/profile`, {
+        method: "POST",
+        headers: getPassportHeaders(),
+        body: JSON.stringify({ name: updated.name })
+      });
+      if (res.ok) {
+        setUserProfile(updated);
+        localStorage.setItem("pivnimapa_user", JSON.stringify(updated));
+        fetchPassportData(updated.email, updated.password);
+      }
+    } catch (err) {
+      console.error("Failed to update user profile on backend:", err);
+    }
   };
 
   // Log a pub/beer visit to the Beer Passport
@@ -208,7 +250,7 @@ export default function App() {
     try {
       const res = await fetch(`/api/passports/${encodeURIComponent(userProfile.email)}/visits`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getPassportHeaders(),
         body: JSON.stringify({
           pubId,
           pubName,
@@ -236,6 +278,7 @@ export default function App() {
     try {
       const res = await fetch(`/api/passports/${encodeURIComponent(userProfile.email)}/visits/${encodeURIComponent(visitId)}`, {
         method: "DELETE",
+        headers: getPassportHeaders(),
       });
 
       if (!res.ok) throw new Error("Chyba při odstraňování záznamu");
@@ -254,7 +297,7 @@ export default function App() {
     try {
       const res = await fetch(`/api/passports/${encodeURIComponent(userProfile.email)}/favorite-beer`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getPassportHeaders(),
         body: JSON.stringify({ favoriteBeerName: beerName }),
       });
 
@@ -514,22 +557,13 @@ export default function App() {
                   }
                 }}
                 title="Můj Pas"
-                className={`w-10 h-10 rounded-xl flex items-center justify-center border transition overflow-hidden p-0 cursor-pointer select-none ${
+                className={`w-10 h-10 rounded-xl flex items-center justify-center border font-display font-black text-sm transition select-none ${
                   isPassportOpen 
-                    ? "bg-amber-500/25 border-amber-500 text-amber-400 ring-2 ring-amber-500/20" 
-                    : "bg-slate-950 hover:bg-slate-850 border-slate-800 hover:border-amber-500/35 text-slate-200 hover:text-white"
+                    ? "bg-amber-500 text-slate-950 border-amber-500 ring-2 ring-amber-500/20" 
+                    : "bg-slate-950 hover:bg-slate-850 border-slate-800 hover:border-amber-500/35 text-amber-500 hover:text-amber-450"
                 }`}
               >
-                {userProfile.picture ? (
-                  <img
-                    referrerPolicy="no-referrer; same-origin"
-                    src={userProfile.picture}
-                    alt={userProfile.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-5 h-5 text-amber-500" />
-                )}
+                {(userProfile.name ? userProfile.name.trim() : userProfile.email.trim()).charAt(0).toUpperCase()}
               </button>
             </div>
           ) : (

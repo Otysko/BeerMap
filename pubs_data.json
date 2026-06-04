@@ -1,114 +1,2331 @@
 [
   {
-    "id": "pub-1",
-    "name": "Lokál Dlouhááá",
-    "lat": 50.090333,
-    "lng": 14.425983,
-    "address": "Dlouhá 731/33, 110 00 Praha 1",
-    "notes": "Legendární pražská pivnice proslulá špičkově ošetřenou plzní čepovanou přímo z tanků.",
+    "id": "pub-501",
+    "name": "Hostinec U Vystřelenýho oka",
+    "lat": 50.087799,
+    "lng": 14.449753,
+    "address": "U Božích bojovníků 606/3, 130 00 Praha 3",
+    "notes": "Legendární žižkovská hospoda se zahrádkou a kulturním programem.",
     "beers": [
       {
-        "id": "beer-1-1",
-        "name": "Pilsner Urquell",
-        "degrees": "12°",
-        "price": 64,
-        "style": "Světlý ležák",
+        "id": "beer-pub-501-1",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 45,
+        "style": "Světlé výčepní",
         "brewery": "Plzeňský Prazdroj",
-        "description": "Dokonalá tanková plzeň čepovaná na hladinku, šnyt i mlíko."
+        "description": "Lehké výčepní pivo pro každodenní pití."
       },
       {
-        "id": "beer-1-2",
-        "name": "Velkopopovický Kozel Černý",
-        "degrees": "10°",
-        "price": 58,
-        "style": "Tmavé výčepní",
-        "brewery": "Pivovar Velké Popovice",
-        "description": "Jemné karamelové tmavé pivo s vyváženou doznívající hořkostí."
+        "id": "beer-pub-501-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 45,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
       }
     ]
   },
   {
-    "id": "pub-2",
-    "name": "Zlý časy",
-    "lat": 50.063812,
-    "lng": 14.444265,
-    "address": "Čestmírova 390/5, 140 00 Praha 4",
-    "notes": "Útulná malostránská a nuselská klasika s mnoha pípami s nabídkou z malých nezávislých pivovarů.",
+    "id": "pub-502",
+    "name": "Pivnice U Sadu",
+    "lat": 50.082721,
+    "lng": 14.450325,
+    "address": "Škroupovo nám. 1255/5, 130 00 Praha 3",
+    "notes": "Vyhlášená žižkovská pivnice s více výčepy a dlouhou otevírací dobou.",
     "beers": [
       {
-        "id": "beer-2-1",
-        "name": "Matuska Apollo Galaxy",
-        "degrees": "13°",
-        "price": 89,
-        "style": "American Pale Ale (APA)",
-        "brewery": "Pivovar Matuška",
-        "description": "Svrchně kvašené pivo s výrazným chmelovým aroma citrusu a tropického ovoce."
+        "id": "beer-pub-502-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 68,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
       },
       {
-        "id": "beer-2-2",
-        "name": "Únětické Pivo Světlé",
+        "id": "beer-pub-502-2",
+        "name": "Velkopopovický Kozel černý",
         "degrees": "10°",
-        "price": 52,
-        "style": "Světlé výčepní",
-        "brewery": "Únětický pivovar",
-        "description": "Poctivé nefiltrované pivo z regionálního pivovaru s příjemným řízem."
+        "price": 68,
+        "style": "Tmavé výčepní",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Tmavé pivo s karamelovými a praženými tóny."
+      }
+    ]
+  },
+  {
+    "id": "pub-503",
+    "name": "BeerGeek Bar",
+    "lat": 50.080777,
+    "lng": 14.446845,
+    "address": "Vinohradská 988/62, 130 00 Praha 3",
+    "notes": "Craft beer bar s velkým počtem píp a rotující nabídkou řemeslných piv.",
+    "beers": [
+      {
+        "id": "beer-pub-503-1",
+        "name": "Clock Exalt",
+        "degrees": "12°",
+        "price": 75,
+        "style": "American Pale Ale",
+        "brewery": "Pivovar Clock",
+        "description": "Svrchně kvašené pivo s citrusově-chmelovým aroma."
       },
       {
-        "id": "beer-2-3",
-        "name": "Bernard Nefiltrovaný ležák",
+        "id": "beer-pub-503-2",
+        "name": "Sibeeria Lager",
+        "degrees": "12°",
+        "price": 75,
+        "style": "Světlý ležák",
+        "brewery": "Sibeeria",
+        "description": "Moderní interpretace českého ležáku."
+      }
+    ]
+  },
+  {
+    "id": "pub-504",
+    "name": "Hospoda U Houdků",
+    "lat": 50.085542,
+    "lng": 14.453211,
+    "address": "Bořivojova 693/110, 130 00 Praha 3",
+    "notes": "Tradiční žižkovská restaurace a hospoda s historií od první republiky.",
+    "beers": [
+      {
+        "id": "beer-pub-504-1",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 49,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      },
+      {
+        "id": "beer-pub-504-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 49,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-505",
+    "name": "U Habásků",
+    "lat": 50.08412,
+    "lng": 14.45189,
+    "address": "Štítného 408/16, 130 00 Praha 3",
+    "notes": "Klasická žižkovská hospoda pro místní s tradičním pivním sortimentem.",
+    "beers": [
+      {
+        "id": "beer-pub-505-1",
+        "name": "Únětické pivo 12° Nefiltrované",
+        "degrees": "12°",
+        "price": 44,
+        "style": "Nefiltrovaný ležák",
+        "brewery": "Únětický pivovar",
+        "description": "Nefiltrovaný ležák s výrazným tělem."
+      },
+      {
+        "id": "beer-pub-505-2",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 44,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      }
+    ]
+  },
+  {
+    "id": "pub-506",
+    "name": "After party běhu Běchovice Praha",
+    "lat": 50.08353,
+    "lng": 14.456639,
+    "address": "Nad Ohradou 1700/25, 130 00 Praha 3",
+    "notes": "Podnik v okolí Ohrady, vhodný jako lokální zastávka na pivo.",
+    "beers": [
+      {
+        "id": "beer-pub-506-1",
+        "name": "Moucha 11° Muška zlatá",
+        "degrees": "11°",
+        "price": 35,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Moucha 11° Muška zlatá."
+      }
+    ]
+  },
+  {
+    "id": "pub-507",
+    "name": "Akademický klub",
+    "lat": 50.076849,
+    "lng": 14.464122,
+    "address": "náměstí Winstona Churchilla 1938/4, 130 00 Praha 3",
+    "notes": "Klubový podnik v univerzitní části Prahy 3.",
+    "beers": [
+      {
+        "id": "beer-pub-507-1",
+        "name": "Krušovice 11° Mušketýr",
+        "degrees": "11°",
+        "price": 44,
+        "style": "Světlý ležák",
+        "brewery": "Královský pivovar Krušovice",
+        "description": "Ležák s tradičním profilem."
+      },
+      {
+        "id": "beer-pub-507-2",
+        "name": "Zlatopramen Radler Citrón",
+        "degrees": "?",
+        "price": 44,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Zlatopramen Radler Citrón."
+      }
+    ]
+  },
+  {
+    "id": "pub-508",
+    "name": "Bambini pizzerie",
+    "lat": 50.07649,
+    "lng": 14.464125,
+    "address": "Biskupcova 1653/27, 130 00 Praha 3",
+    "notes": "Pizzerie na Žižkově, v datasetu vedená jako podnik s pivním potenciálem.",
+    "beers": []
+  },
+  {
+    "id": "pub-509",
+    "name": "Bar 109",
+    "lat": 50.081759,
+    "lng": 14.454185,
+    "address": "Roháčova 1609/109, 130 00 Praha 3",
+    "notes": "Bar na Roháčově ulici s jednoduchou pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-509-1",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 24,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      }
+    ]
+  },
+  {
+    "id": "pub-510",
+    "name": "Bernard Pub",
+    "lat": 50.087287,
+    "lng": 14.468981,
+    "address": "Jeseniova 1692/93, 130 00 Praha 3",
+    "notes": "Pub se zaměřením na piva Bernard a širší nabídku čepovaných piv.",
+    "beers": [
+      {
+        "id": "beer-pub-510-1",
+        "name": "Bernard 11°",
         "degrees": "11°",
         "price": 56,
         "style": "Světlý ležák",
         "brewery": "Rodinný pivovar Bernard",
-        "description": "Pivo s výraznou chmelovou vůní, hustou pěnou a lahodnou plností."
-      }
-    ]
-  },
-  {
-    "id": "pub-3",
-    "name": "Hostinec U Jelínků",
-    "lat": 50.082725,
-    "lng": 14.420138,
-    "address": "Charvátova 110/2, 110 00 Praha 1",
-    "notes": "Jedna z nejstarších nepřetržitě fungujících plzeňských pivnic v Praze s neopakovatelnou atmosférou.",
-    "beers": [
-      {
-        "id": "beer-3-1",
-        "name": "Pilsner Urquell",
-        "degrees": "12°",
-        "price": 61,
-        "style": "Světlý ležák",
-        "brewery": "Plzeňský Prazdroj",
-        "description": "Tradiční plzeňské točené s perfektním řízem a hustou krémovou pěnou."
-      }
-    ]
-  },
-  {
-    "id": "pub-4",
-    "name": "Pivovarský Klub Benedict",
-    "lat": 50.091189,
-    "lng": 14.444985,
-    "address": "Křižíkova 272/17, 186 00 Praha 8 - Karlín",
-    "notes": "Otevřený prostor pro milovníky piva v Karlíně s rotujícími pípami a stovkami lahví z celého světa.",
-    "beers": [
-      {
-        "id": "beer-4-1",
-        "name": "Břevnovský Benedict Světlý ležák",
-        "degrees": "12°",
-        "price": 68,
-        "style": "Světlý ležák",
-        "brewery": "Břevnovský klášterní pivovar",
-        "description": "Chlebnaté, středně hořké pivo čepované přímo od zdroje v karlínské pobočce."
+        "description": "Ležák s výraznějším sladovým tělem."
       },
       {
-        "id": "beer-4-2",
-        "name": "Kocour Stout",
+        "id": "beer-pub-510-2",
+        "name": "Bernard 12° Nefiltrovaný ležák",
         "degrees": "12°",
-        "price": 78,
-        "style": "Stout",
-        "brewery": "Pivovar Kocour Varnsdorf",
-        "description": "Tmavé svrchně kvašené pivo s výraznou chutí po kávě a čokoládě."
+        "price": 56,
+        "style": "Nefiltrovaný světlý ležák",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Nefiltrovaný ležák s plnějším tělem."
       }
     ]
+  },
+  {
+    "id": "pub-511",
+    "name": "Bowling bar u Viktorky",
+    "lat": 50.089535,
+    "lng": 14.457937,
+    "address": "Seifertova 560/49, 130 00 Praha 3",
+    "notes": "Bowlingový bar u Viktorky s pivem na čepu.",
+    "beers": [
+      {
+        "id": "beer-pub-511-1",
+        "name": "Bernard 11°",
+        "degrees": "11°",
+        "price": 30,
+        "style": "Světlý ležák",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Ležák s výraznějším sladovým tělem."
+      },
+      {
+        "id": "beer-pub-511-2",
+        "name": "Budějovický Budvar 11° Budvar 33",
+        "degrees": "11°",
+        "price": 30,
+        "style": "Světlý ležák",
+        "brewery": "Budějovický Budvar",
+        "description": "Hořčí ležák z řady Budvar 33."
+      }
+    ]
+  },
+  {
+    "id": "pub-512",
+    "name": "Bowling Club",
+    "lat": 50.088372,
+    "lng": 14.457085,
+    "address": "Bořivojova 783/83, 130 00 Praha 3",
+    "notes": "Bowlingový podnik v Bořivojově ulici s tradičními pivy.",
+    "beers": [
+      {
+        "id": "beer-pub-512-1",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 30,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      },
+      {
+        "id": "beer-pub-512-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 30,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-513",
+    "name": "Bukowski's Bar",
+    "lat": 50.09483,
+    "lng": 14.46097,
+    "address": "Bořivojova 689/86, 130 00 Praha 3",
+    "notes": "Známý žižkovský bar s večerní atmosférou.",
+    "beers": [
+      {
+        "id": "beer-pub-513-1",
+        "name": "Vinohradský pivovar 11°",
+        "degrees": "11°",
+        "price": 35,
+        "style": "Světlý ležák",
+        "brewery": "Vinohradský pivovar",
+        "description": "Lokální pražský ležák z Vinohradského pivovaru."
+      }
+    ]
+  },
+  {
+    "id": "pub-514",
+    "name": "Camp Žižkov",
+    "lat": 50.088312,
+    "lng": 14.455806,
+    "address": "Nad Ohradou 2667/17, 130 00 Praha 3",
+    "notes": "Areálový podnik na Žižkově s více druhy čepovaného piva.",
+    "beers": [
+      {
+        "id": "beer-pub-514-1",
+        "name": "Gambrinus 11° Excelent",
+        "degrees": "11°",
+        "price": 49,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Dobře pitelný ležák s jemnou hořkostí."
+      },
+      {
+        "id": "beer-pub-514-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 49,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-515",
+    "name": "Ceel",
+    "lat": 50.09518,
+    "lng": 14.452886,
+    "address": "Husitská 192/45, 130 00 Praha 3",
+    "notes": "Podnik v Husitské ulici s ležáky ze Svijan a Poličky.",
+    "beers": [
+      {
+        "id": "beer-pub-515-1",
+        "name": "Svijany 11° Máz",
+        "degrees": "11°",
+        "price": 29,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Svijany",
+        "description": "Tradiční svijanský ležák s dobrou pitelností."
+      },
+      {
+        "id": "beer-pub-515-2",
+        "name": "Polička 11° Otakar",
+        "degrees": "11°",
+        "price": 29,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Polička 11° Otakar."
+      }
+    ]
+  },
+  {
+    "id": "pub-516",
+    "name": "Čekárna",
+    "lat": 50.088611,
+    "lng": 14.465397,
+    "address": "Biskupcova 1713/25, 130 00 Praha 3",
+    "notes": "Lokální bar/podnik u Biskupcovy s pivem Radegast.",
+    "beers": [
+      {
+        "id": "beer-pub-516-1",
+        "name": "Radegast 12°",
+        "degrees": "12°",
+        "price": 38,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Radegast",
+        "description": "Hořký ležák s výrazným chmelovým charakterem."
+      }
+    ]
+  },
+  {
+    "id": "pub-517",
+    "name": "Chaloupka",
+    "lat": 50.094173,
+    "lng": 14.47033,
+    "address": "Ke Kapslovně 1918/2, 130 00 Praha 3",
+    "notes": "Menší podnik v lokalitě Kapslovna.",
+    "beers": []
+  },
+  {
+    "id": "pub-518",
+    "name": "Chocobamba",
+    "lat": 50.08629,
+    "lng": 14.458089,
+    "address": "Krásova 1013/6, 130 00 Praha 3",
+    "notes": "Podnik v Krásově ulici, zařazený jako gastronomická provozovna Prahy 3.",
+    "beers": []
+  },
+  {
+    "id": "pub-519",
+    "name": "Coyote",
+    "lat": 50.087449,
+    "lng": 14.46765,
+    "address": "Vinohradská 2828/151, 130 00 Praha 3",
+    "notes": "Bar/restaurace v oblasti Flory s pivy Staropramen.",
+    "beers": [
+      {
+        "id": "beer-pub-519-1",
+        "name": "Staropramen 11° Granát",
+        "degrees": "11°",
+        "price": 39,
+        "style": "Polotmavý ležák",
+        "brewery": "Pivovary Staropramen",
+        "description": "Polotmavé pivo s karamelovým tónem."
+      },
+      {
+        "id": "beer-pub-519-2",
+        "name": "Stella Artois",
+        "degrees": "12°",
+        "price": 39,
+        "style": "Světlý ležák",
+        "brewery": "Stella Artois",
+        "description": "Belgický světlý ležák s jemnou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-520",
+    "name": "District 3",
+    "lat": 50.081667,
+    "lng": 14.452275,
+    "address": "Řehořova 938/15, 130 00 Praha 3",
+    "notes": "Podnik pojmenovaný po Praze 3 s pivem z Vinohradského pivovaru.",
+    "beers": [
+      {
+        "id": "beer-pub-520-1",
+        "name": "Vinohradský pivovar 11°",
+        "degrees": "11°",
+        "price": 50,
+        "style": "Světlý ležák",
+        "brewery": "Vinohradský pivovar",
+        "description": "Lokální pražský ležák z Vinohradského pivovaru."
+      }
+    ]
+  },
+  {
+    "id": "pub-521",
+    "name": "El Toro",
+    "lat": 50.089999,
+    "lng": 14.467544,
+    "address": "Kubelíkova 1123/33, 130 00 Praha 3",
+    "notes": "Restaurace v Kubelíkově ulici s nefiltrovaným ležákem.",
+    "beers": [
+      {
+        "id": "beer-pub-521-1",
+        "name": "Staropramen 12° Nefiltrovaný ležák",
+        "degrees": "12°",
+        "price": 38,
+        "style": "Nefiltrovaný ležák",
+        "brewery": "Pivovary Staropramen",
+        "description": "Nefiltrovaný ležák s plnější chutí."
+      }
+    ]
+  },
+  {
+    "id": "pub-522",
+    "name": "EXIT Chmelnice",
+    "lat": 50.086271,
+    "lng": 14.454462,
+    "address": "Koněvova 2597/219, 130 00 Praha 3",
+    "notes": "Klubový podnik v oblasti Chmelnice s klasickou pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-522-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 41,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      },
+      {
+        "id": "beer-pub-522-2",
+        "name": "Kozel 10° Černý",
+        "degrees": "10°",
+        "price": 41,
+        "style": "Tmavé výčepní",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Tmavé výčepní pivo s jemně sladovým dozvukem."
+      }
+    ]
+  },
+  {
+    "id": "pub-523",
+    "name": "Forbes Casino",
+    "lat": 50.085358,
+    "lng": 14.470896,
+    "address": "Koněvova 1743/114, 130 00 Praha 3",
+    "notes": "Casino podnik na Koněvově ulici.",
+    "beers": []
+  },
+  {
+    "id": "pub-524",
+    "name": "Galerie Lapálie",
+    "lat": 50.090217,
+    "lng": 14.455778,
+    "address": "Bořivojova 1081/40, 130 00 Praha 3",
+    "notes": "Menší žižkovský podnik v Bořivojově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-524-1",
+        "name": "Dačický 12°",
+        "degrees": "12°",
+        "price": 34,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Kutná Hora",
+        "description": "Světlý ležák s tradiční recepturou."
+      }
+    ]
+  },
+  {
+    "id": "pub-525",
+    "name": "Gold Chicken",
+    "lat": 50.084626,
+    "lng": 14.460082,
+    "address": "Koněvova 1728/118, 130 00 Praha 3",
+    "notes": "Gastro provozovna na Koněvově ulici.",
+    "beers": []
+  },
+  {
+    "id": "pub-526",
+    "name": "Herba Café",
+    "lat": 50.09057,
+    "lng": 14.449819,
+    "address": "Bořivojova 768/70, 130 00 Praha 3",
+    "notes": "Kavárensko-barový podnik s čepovaným pivem.",
+    "beers": [
+      {
+        "id": "beer-pub-526-1",
+        "name": "Gambrinus 11° Excelent",
+        "degrees": "11°",
+        "price": 45,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Dobře pitelný ležák s jemnou hořkostí."
+      },
+      {
+        "id": "beer-pub-526-2",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 45,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      }
+    ]
+  },
+  {
+    "id": "pub-527",
+    "name": "Hodovna Žižkov",
+    "lat": 50.079363,
+    "lng": 14.464016,
+    "address": "Chelčického 1153/14, 130 00 Praha 3",
+    "notes": "Žižkovská hodovna s pivem Budvar.",
+    "beers": [
+      {
+        "id": "beer-pub-527-1",
+        "name": "Budějovický Budvar 10° Cvikl nefiltrovaný",
+        "degrees": "10°",
+        "price": 26,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Budějovický Budvar 10° Cvikl nefiltrovaný."
+      },
+      {
+        "id": "beer-pub-527-2",
+        "name": "Budějovický Budvar 12°",
+        "degrees": "12°",
+        "price": 26,
+        "style": "Světlý ležák",
+        "brewery": "Budějovický Budvar",
+        "description": "Klasický světlý ležák s delším zráním."
+      }
+    ]
+  },
+  {
+    "id": "pub-528",
+    "name": "Hospoda Jarov",
+    "lat": 50.076332,
+    "lng": 14.460401,
+    "address": "2502/250 Albert, 130 00 Praha 3",
+    "notes": "Hospoda v oblasti Jarova.",
+    "beers": [
+      {
+        "id": "beer-pub-528-1",
+        "name": "Krušovice 10°",
+        "degrees": "10°",
+        "price": 41,
+        "style": "Světlé výčepní",
+        "brewery": "Královský pivovar Krušovice",
+        "description": "Klasické výčepní pivo."
+      },
+      {
+        "id": "beer-pub-528-2",
+        "name": "Krušovice 11°",
+        "degrees": "11°",
+        "price": 41,
+        "style": "Světlý ležák",
+        "brewery": "Královský pivovar Krušovice",
+        "description": "Světlý ležák s vyváženou chutí."
+      }
+    ]
+  },
+  {
+    "id": "pub-529",
+    "name": "Hrabovka",
+    "lat": 50.094596,
+    "lng": 14.445706,
+    "address": "Viadukt Velká Hrabovka, Žižkov, 130 00 Praha 3",
+    "notes": "Podnik v okolí viaduktu Velká Hrabovka.",
+    "beers": [
+      {
+        "id": "beer-pub-529-1",
+        "name": "Vinohradský pivovar 11°",
+        "degrees": "11°",
+        "price": 65,
+        "style": "Světlý ležák",
+        "brewery": "Vinohradský pivovar",
+        "description": "Lokální pražský ležák z Vinohradského pivovaru."
+      },
+      {
+        "id": "beer-pub-529-2",
+        "name": "Poděbradský Zdroj 12°",
+        "degrees": "12°",
+        "price": 65,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Poděbradský Zdroj 12°."
+      }
+    ]
+  },
+  {
+    "id": "pub-530",
+    "name": "Infocentrum Salé",
+    "lat": 50.080709,
+    "lng": 14.451202,
+    "address": "Orebitská 194/14, 130 00 Praha 3",
+    "notes": "Komunitní/infocentrum s pivem Hubertus Kácov.",
+    "beers": [
+      {
+        "id": "beer-pub-530-1",
+        "name": "Hubertus Kácov 10°",
+        "degrees": "10°",
+        "price": 25,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovar Kácov",
+        "description": "Lehké výčepní pivo z Kácova."
+      }
+    ]
+  },
+  {
+    "id": "pub-531",
+    "name": "Jídelna",
+    "lat": 50.077411,
+    "lng": 14.457418,
+    "address": "Koněvova 1965/208, 130 00 Praha 3",
+    "notes": "Jídelna v oblasti Koněvovy ulice.",
+    "beers": []
+  },
+  {
+    "id": "pub-532",
+    "name": "KFC Praha 3 Flora",
+    "lat": 50.084788,
+    "lng": 14.464246,
+    "address": "Vinohradská 2828/151, 130 00 Praha 3",
+    "notes": "Rychlé občerstvení v oblasti Flory, evidované s pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-532-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 39,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-532-2",
+        "name": "Radegast 0% Birell",
+        "degrees": "?",
+        "price": 39,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Radegast 0% Birell."
+      }
+    ]
+  },
+  {
+    "id": "pub-533",
+    "name": "Kino Aero",
+    "lat": 50.094345,
+    "lng": 14.451028,
+    "address": "Biskupcova 1733/31, 130 00 Praha 3",
+    "notes": "Kultovní kino se známým barem a vnitroblokem.",
+    "beers": [
+      {
+        "id": "beer-pub-533-1",
+        "name": "Bernard 10°",
+        "degrees": "10°",
+        "price": 41,
+        "style": "Světlé výčepní",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Lehčí pivo s čistým profilem."
+      },
+      {
+        "id": "beer-pub-533-2",
+        "name": "Bernard 12° Nefiltrovaný ležák",
+        "degrees": "12°",
+        "price": 41,
+        "style": "Nefiltrovaný světlý ležák",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Nefiltrovaný ležák s plnějším tělem."
+      }
+    ]
+  },
+  {
+    "id": "pub-534",
+    "name": "Komunitní centrum Žižkov Žižkostel",
+    "lat": 50.086874,
+    "lng": 14.459963,
+    "address": "nám. Barikád 1520/1, 130 00 Praha 3",
+    "notes": "Komunitní centrum v bývalém kostele s kulturním programem.",
+    "beers": [
+      {
+        "id": "beer-pub-534-1",
+        "name": "Žatec 12° Export",
+        "degrees": "12°",
+        "price": 36,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Žatec 12° Export."
+      },
+      {
+        "id": "beer-pub-534-2",
+        "name": "Vinohradský pivovar 11°",
+        "degrees": "11°",
+        "price": 36,
+        "style": "Světlý ležák",
+        "brewery": "Vinohradský pivovar",
+        "description": "Lokální pražský ležák z Vinohradského pivovaru."
+      }
+    ]
+  },
+  {
+    "id": "pub-535",
+    "name": "La Casa",
+    "lat": 50.09049,
+    "lng": 14.462285,
+    "address": "Kostnické náměstí, 130 00 Praha 3",
+    "notes": "Trattoria/gastro podnik na Kostnickém náměstí.",
+    "beers": []
+  },
+  {
+    "id": "pub-536",
+    "name": "Lavička",
+    "lat": 50.080626,
+    "lng": 14.441196,
+    "address": "Seifertova 303/77, 130 00 Praha 3",
+    "notes": "Zahradní restaurace na Žižkově se známou venkovní atmosférou.",
+    "beers": [
+      {
+        "id": "beer-pub-536-1",
+        "name": "Bernard 10°",
+        "degrees": "10°",
+        "price": 32,
+        "style": "Světlé výčepní",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Lehčí pivo s čistým profilem."
+      },
+      {
+        "id": "beer-pub-536-2",
+        "name": "Bernard 12° Nefiltrovaný ležák",
+        "degrees": "12°",
+        "price": 32,
+        "style": "Nefiltrovaný světlý ležák",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Nefiltrovaný ležák s plnějším tělem."
+      }
+    ]
+  },
+  {
+    "id": "pub-537",
+    "name": "Little Bastard",
+    "lat": 50.081638,
+    "lng": 14.455935,
+    "address": "Koněvova 2175/251, 130 00 Praha 3",
+    "notes": "Podnik v oblasti Koněvovy ulice s pivy Staropramen.",
+    "beers": [
+      {
+        "id": "beer-pub-537-1",
+        "name": "Staropramen 11°",
+        "degrees": "11°",
+        "price": 50,
+        "style": "Světlý ležák",
+        "brewery": "Pivovary Staropramen",
+        "description": "Světlý ležák s pražskou pivní tradicí."
+      },
+      {
+        "id": "beer-pub-537-2",
+        "name": "Staropramen 12° Nefiltrovaný ležák",
+        "degrees": "12°",
+        "price": 50,
+        "style": "Nefiltrovaný ležák",
+        "brewery": "Pivovary Staropramen",
+        "description": "Nefiltrovaný ležák s plnější chutí."
+      }
+    ]
+  },
+  {
+    "id": "pub-538",
+    "name": "Malkovich Bar",
+    "lat": 50.084545,
+    "lng": 14.465202,
+    "address": "Bořivojova 623/100, 130 00 Praha 3",
+    "notes": "Bar v Bořivojově ulici.",
+    "beers": []
+  },
+  {
+    "id": "pub-539",
+    "name": "Martyho Frky Pub",
+    "lat": 50.089407,
+    "lng": 14.449554,
+    "address": "Milíčova 471/25, 130 00 Praha 3",
+    "notes": "Pub v Milíčově ulici se Svijany.",
+    "beers": [
+      {
+        "id": "beer-pub-539-1",
+        "name": "Svijany 11° Máz",
+        "degrees": "11°",
+        "price": 21,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Svijany",
+        "description": "Tradiční svijanský ležák s dobrou pitelností."
+      },
+      {
+        "id": "beer-pub-539-2",
+        "name": "Svijany 13° Kvasničák",
+        "degrees": "13°",
+        "price": 21,
+        "style": "Kvasnicový speciál",
+        "brewery": "Pivovar Svijany",
+        "description": "Kvasnicové pivo s plnějším tělem."
+      }
+    ]
+  },
+  {
+    "id": "pub-540",
+    "name": "Matrix Music Club",
+    "lat": 50.081021,
+    "lng": 14.458603,
+    "address": "Koněvova 1730/13, 130 00 Praha 3",
+    "notes": "Hudební klub na Žižkově s klasickým pivním sortimentem.",
+    "beers": [
+      {
+        "id": "beer-pub-540-1",
+        "name": "Ferdinand 10°",
+        "degrees": "10°",
+        "price": 32,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Ferdinand 10°."
+      },
+      {
+        "id": "beer-pub-540-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 32,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-541",
+    "name": "Mei Shi Ge",
+    "lat": 50.086504,
+    "lng": 14.456148,
+    "address": "Slavíkova 1190/18, 130 00 Praha 3",
+    "notes": "Asijská restaurace v okolí Jiřího z Poděbrad.",
+    "beers": [
+      {
+        "id": "beer-pub-541-1",
+        "name": "Budějovický Budvar 10°",
+        "degrees": "10°",
+        "price": 22,
+        "style": "Světlé výčepní",
+        "brewery": "Budějovický Budvar",
+        "description": "Světlé výčepní pivo z Budějovic."
+      }
+    ]
+  },
+  {
+    "id": "pub-542",
+    "name": "Merkur Casino",
+    "lat": 50.082989,
+    "lng": 14.470642,
+    "address": "Koněvova 1956/214, 130 00 Praha 3",
+    "notes": "Casino podnik v oblasti Koněvovy ulice.",
+    "beers": []
+  },
+  {
+    "id": "pub-543",
+    "name": "Molekula",
+    "lat": 50.087357,
+    "lng": 14.447881,
+    "address": "Roháčova 154/6, 130 00 Praha 3",
+    "notes": "Podnik v Roháčově ulici s pivy Staropramen a Únětice.",
+    "beers": [
+      {
+        "id": "beer-pub-543-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 0,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      },
+      {
+        "id": "beer-pub-543-2",
+        "name": "Únětické pivo 10° Světlé",
+        "degrees": "10°",
+        "price": 0,
+        "style": "Světlé výčepní",
+        "brewery": "Únětický pivovar",
+        "description": "Světlá desítka z Únětic."
+      }
+    ]
+  },
+  {
+    "id": "pub-544",
+    "name": "Mopra",
+    "lat": 50.090133,
+    "lng": 14.467839,
+    "address": "Táboritská 475/6, 130 00 Praha 3",
+    "notes": "Bar/podnik na Táboritské ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-544-1",
+        "name": "Bernard 11°",
+        "degrees": "11°",
+        "price": 50,
+        "style": "Světlý ležák",
+        "brewery": "Rodinný pivovar Bernard",
+        "description": "Ležák s výraznějším sladovým tělem."
+      }
+    ]
+  },
+  {
+    "id": "pub-545",
+    "name": "Na křižovatce",
+    "lat": 50.089061,
+    "lng": 14.45423,
+    "address": "Vinohradská 1612/149, 130 00 Praha 3",
+    "notes": "Restaurace na Vinohradské s širší klasickou pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-545-1",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 46,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      },
+      {
+        "id": "beer-pub-545-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 46,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-546",
+    "name": "Na Třemošné",
+    "lat": 50.091323,
+    "lng": 14.445774,
+    "address": "Přemyslovská 1660/35, 130 00 Praha 3",
+    "notes": "Lokální podnik v Přemyslovské ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-546-1",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 24,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      },
+      {
+        "id": "beer-pub-546-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 24,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-547",
+    "name": "Na větvi",
+    "lat": 50.07871,
+    "lng": 14.466642,
+    "address": "Koněvova 2775/139, 130 00 Praha 3",
+    "notes": "Podnik na Koněvově s pivem Svijany a Plzeň.",
+    "beers": [
+      {
+        "id": "beer-pub-547-1",
+        "name": "Svijany 11° Máz",
+        "degrees": "11°",
+        "price": 28,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Svijany",
+        "description": "Tradiční svijanský ležák s dobrou pitelností."
+      },
+      {
+        "id": "beer-pub-547-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 28,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-548",
+    "name": "Nad Viktorkou",
+    "lat": 50.074146,
+    "lng": 14.45461,
+    "address": "Bořivojova 785/79, 130 00 Praha 3",
+    "notes": "Podnik v Bořivojově ulici poblíž Viktorky.",
+    "beers": [
+      {
+        "id": "beer-pub-548-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 60,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-548-2",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 60,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      }
+    ]
+  },
+  {
+    "id": "pub-549",
+    "name": "Navat",
+    "lat": 50.077574,
+    "lng": 14.44397,
+    "address": "Pitterova Central Park Praha, 130 00 Praha 3",
+    "notes": "Podnik v rezidenční lokalitě Central Park Praha.",
+    "beers": [
+      {
+        "id": "beer-pub-549-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 75,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-550",
+    "name": "Nebeská vůně",
+    "lat": 50.080858,
+    "lng": 14.438646,
+    "address": "545/44 Nebeská vůně, 130 00 Praha 3",
+    "notes": "Menší podnik v lokalitě Prahy 3.",
+    "beers": [
+      {
+        "id": "beer-pub-550-1",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 45,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      }
+    ]
+  },
+  {
+    "id": "pub-551",
+    "name": "Olše",
+    "lat": 50.083723,
+    "lng": 14.467689,
+    "address": "Táboritská 17/26, 130 00 Praha 3",
+    "notes": "Restaurace/pivnice na Táboritské s plzeňským sortimentem.",
+    "beers": [
+      {
+        "id": "beer-pub-551-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 69,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-551-2",
+        "name": "Kozel 10° Černý",
+        "degrees": "10°",
+        "price": 69,
+        "style": "Tmavé výčepní",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Tmavé výčepní pivo s jemně sladovým dozvukem."
+      }
+    ]
+  },
+  {
+    "id": "pub-552",
+    "name": "Oryx",
+    "lat": 50.081673,
+    "lng": 14.469187,
+    "address": "Habrová 2705/2A, 130 00 Praha 3",
+    "notes": "Restaurace v lokalitě Habrová s klasickými českými pivy.",
+    "beers": [
+      {
+        "id": "beer-pub-552-1",
+        "name": "Radegast 10°",
+        "degrees": "10°",
+        "price": 48,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovar Radegast",
+        "description": "Lehčí hořké výčepní pivo."
+      },
+      {
+        "id": "beer-pub-552-2",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 48,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      }
+    ]
+  },
+  {
+    "id": "pub-553",
+    "name": "Palác Akropolis",
+    "lat": 50.083963,
+    "lng": 14.460901,
+    "address": "Kubelíkova 1548/27, 130 00 Praha 3",
+    "notes": "Legendární kulturní prostor s barem a koncertním programem.",
+    "beers": [
+      {
+        "id": "beer-pub-553-1",
+        "name": "Gambrinus 11° Excelent",
+        "degrees": "11°",
+        "price": 55,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Dobře pitelný ležák s jemnou hořkostí."
+      },
+      {
+        "id": "beer-pub-553-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 55,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-554",
+    "name": "Pivní rozmanitost",
+    "lat": 50.079479,
+    "lng": 14.458394,
+    "address": "Husitská 73/37, 130 00 Praha 3",
+    "notes": "Pivotéka/bar s řemeslnou pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-554-1",
+        "name": "Želiv 12° Milo American Ale",
+        "degrees": "12°",
+        "price": 30,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Želiv 12° Milo American Ale."
+      },
+      {
+        "id": "beer-pub-554-2",
+        "name": "Matuška 21° Hellcat",
+        "degrees": "21°",
+        "price": 30,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Matuška 21° Hellcat."
+      }
+    ]
+  },
+  {
+    "id": "pub-555",
+    "name": "Pivnice Radyně",
+    "lat": 50.087992,
+    "lng": 14.471048,
+    "address": "Žerotínova 1739/66, 130 00 Praha 3",
+    "notes": "Pivnice v Žerotínově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-555-1",
+        "name": "Braník 10°",
+        "degrees": "10°",
+        "price": 25,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Lehké výčepní pivo."
+      }
+    ]
+  },
+  {
+    "id": "pub-556",
+    "name": "Pivotéka U Krakena",
+    "lat": 50.085806,
+    "lng": 14.443675,
+    "address": "Husitská 37, 130 00 Praha 3",
+    "notes": "Pivotéka/pivnice v Husitské ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-556-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 22,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      },
+      {
+        "id": "beer-pub-556-2",
+        "name": "Braník 10°",
+        "degrees": "10°",
+        "price": 22,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Lehké výčepní pivo."
+      }
+    ]
+  },
+  {
+    "id": "pub-557",
+    "name": "Pizza U staré pece",
+    "lat": 50.083412,
+    "lng": 14.472601,
+    "address": "Olšanské náměstí 1782/8, 130 00 Praha 3",
+    "notes": "Pizza podnik na Olšanském náměstí s pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-557-1",
+        "name": "Krušovice 11° Mušketýr",
+        "degrees": "11°",
+        "price": 45,
+        "style": "Světlý ležák",
+        "brewery": "Královský pivovar Krušovice",
+        "description": "Ležák s tradičním profilem."
+      },
+      {
+        "id": "beer-pub-557-2",
+        "name": "Stella Artois",
+        "degrees": "12°",
+        "price": 45,
+        "style": "Světlý ležák",
+        "brewery": "Stella Artois",
+        "description": "Belgický světlý ležák s jemnou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-558",
+    "name": "Planeta Žižkov",
+    "lat": 50.085764,
+    "lng": 14.473557,
+    "address": "Tachovské náměstí 1, 130 00 Praha 3",
+    "notes": "Podnik u Tachovského náměstí s klasickou pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-558-1",
+        "name": "Gambrinus 10° Nepasterizovaný",
+        "degrees": "10°",
+        "price": 38,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Gambrinus 10° Nepasterizovaný."
+      },
+      {
+        "id": "beer-pub-558-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 38,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-559",
+    "name": "Play-house Seifertova",
+    "lat": 50.093972,
+    "lng": 14.462181,
+    "address": "Seifertova 465/15, 130 00 Praha 3",
+    "notes": "Bar/podnik v Seifertově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-559-1",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 28,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      }
+    ]
+  },
+  {
+    "id": "pub-560",
+    "name": "Play-House U Kněžské louky",
+    "lat": 50.087997,
+    "lng": 14.450114,
+    "address": "U Kněžské louky 2153/2, 130 00 Praha 3",
+    "notes": "Podnik v lokalitě U Kněžské louky.",
+    "beers": [
+      {
+        "id": "beer-pub-560-1",
+        "name": "Březňák 11°",
+        "degrees": "11°",
+        "price": 59,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Březňák 11°."
+      }
+    ]
+  },
+  {
+    "id": "pub-561",
+    "name": "Polo",
+    "lat": 50.082244,
+    "lng": 14.451768,
+    "address": "Jana Želivského 1790/35, 130 00 Praha 3",
+    "notes": "Restaurace v ulici Jana Želivského s plzeňským sortimentem.",
+    "beers": [
+      {
+        "id": "beer-pub-561-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 48,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-561-2",
+        "name": "Budějovický Budvar 12°",
+        "degrees": "12°",
+        "price": 48,
+        "style": "Světlý ležák",
+        "brewery": "Budějovický Budvar",
+        "description": "Klasický světlý ležák s delším zráním."
+      }
+    ]
+  },
+  {
+    "id": "pub-562",
+    "name": "Rebels",
+    "lat": 50.08852,
+    "lng": 14.451327,
+    "address": "Koněvova 1519/165, 130 00 Praha 3",
+    "notes": "Podnik na Koněvově s širší pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-562-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 62,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-562-2",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 62,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      }
+    ]
+  },
+  {
+    "id": "pub-563",
+    "name": "Reda bar",
+    "lat": 50.085136,
+    "lng": 14.462635,
+    "address": "Biskupcova 1713/25, 130 00 Praha 3",
+    "notes": "Bar v Biskupcově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-563-1",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 41,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      },
+      {
+        "id": "beer-pub-563-2",
+        "name": "Staropramen 11°",
+        "degrees": "11°",
+        "price": 41,
+        "style": "Světlý ležák",
+        "brewery": "Pivovary Staropramen",
+        "description": "Světlý ležák s pražskou pivní tradicí."
+      }
+    ]
+  },
+  {
+    "id": "pub-564",
+    "name": "Relax Centrum Bowling",
+    "lat": 50.082274,
+    "lng": 14.46027,
+    "address": "1730/13 MATRIX club, 130 00 Praha 3",
+    "notes": "Bowlingové centrum v návaznosti na Matrix club.",
+    "beers": [
+      {
+        "id": "beer-pub-564-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 70,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-565",
+    "name": "Restaurace Kopyto",
+    "lat": 50.093371,
+    "lng": 14.457879,
+    "address": "Bořivojova 883/116, 130 00 Praha 3",
+    "notes": "Tradiční restaurace v Bořivojově ulici s českou kuchyní.",
+    "beers": [
+      {
+        "id": "beer-pub-565-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 55,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-565-2",
+        "name": "Lobkowicz Premium 12°",
+        "degrees": "12°",
+        "price": 55,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Lobkowicz Premium 12°."
+      }
+    ]
+  },
+  {
+    "id": "pub-566",
+    "name": "Restaurace pod Viktorkou",
+    "lat": 50.082803,
+    "lng": 14.462266,
+    "address": "Seifertova 570/55, 130 00 Praha 3",
+    "notes": "Restaurace v Seifertově ulici u Viktorky.",
+    "beers": [
+      {
+        "id": "beer-pub-566-1",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 28,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      },
+      {
+        "id": "beer-pub-566-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 28,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-567",
+    "name": "Restaurace U Kurelů",
+    "lat": 50.08438,
+    "lng": 14.467275,
+    "address": "Chvalova 1119/1, 130 00 Praha 3",
+    "notes": "Restaurace v Chvalově ulici s rozsáhlejší pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-567-1",
+        "name": "Zemské pivo 10°",
+        "degrees": "10°",
+        "price": 45,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Zemské pivo 10°."
+      },
+      {
+        "id": "beer-pub-567-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 45,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-568",
+    "name": "Rock Club Kain",
+    "lat": 50.075003,
+    "lng": 14.459205,
+    "address": "Husitská 106/1, 130 00 Praha 3",
+    "notes": "Hudební klub v Husitské ulici s běžnou pivní nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-568-1",
+        "name": "Gambrinus 11° Excelent",
+        "degrees": "11°",
+        "price": 27,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Dobře pitelný ležák s jemnou hořkostí."
+      },
+      {
+        "id": "beer-pub-568-2",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 27,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      }
+    ]
+  },
+  {
+    "id": "pub-569",
+    "name": "ROH družstevní kavárna",
+    "lat": 50.077676,
+    "lng": 14.447956,
+    "address": "U Božích bojovníků 606/3, 130 00 Praha 3",
+    "notes": "Družstevní kavárna/bar ve stejné adrese jako známý žižkovský kulturní prostor.",
+    "beers": [
+      {
+        "id": "beer-pub-569-1",
+        "name": "Podkováň 11°",
+        "degrees": "11°",
+        "price": 33,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Podkováň 11°."
+      },
+      {
+        "id": "beer-pub-569-2",
+        "name": "Kolčavka 11°",
+        "degrees": "11°",
+        "price": 33,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Kolčavka 11°."
+      }
+    ]
+  },
+  {
+    "id": "pub-570",
+    "name": "Schnitzel Plac",
+    "lat": 50.090758,
+    "lng": 14.452644,
+    "address": "Jana Želivského 2387/15, 130 00 Praha 3",
+    "notes": "Restaurace se zaměřením na řízky a klasické pivo.",
+    "beers": [
+      {
+        "id": "beer-pub-570-1",
+        "name": "Gambrinus 12°",
+        "degrees": "12°",
+        "price": 38,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Plnější světlý ležák z portfolia Gambrinus."
+      }
+    ]
+  },
+  {
+    "id": "pub-571",
+    "name": "Shotgun",
+    "lat": 50.072545,
+    "lng": 14.45802,
+    "address": "V. Nejedlého 869/7, 130 00 Praha 3",
+    "notes": "Bar/podnik v ulici Víta Nejedlého.",
+    "beers": [
+      {
+        "id": "beer-pub-571-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 42,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-572",
+    "name": "Sport bar Dream",
+    "lat": 50.079491,
+    "lng": 14.453272,
+    "address": "Cimburkova 6/3, 130 00 Praha 3",
+    "notes": "Sport bar v Cimburkově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-572-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 30,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      }
+    ]
+  },
+  {
+    "id": "pub-573",
+    "name": "Sportbar",
+    "lat": 50.083142,
+    "lng": 14.458477,
+    "address": "Koněvova 1965/215/1956, 130 00 Praha 3",
+    "notes": "Sportovní bar na Koněvově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-573-1",
+        "name": "Svijany 11° Máz",
+        "degrees": "11°",
+        "price": 41,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Svijany",
+        "description": "Tradiční svijanský ležák s dobrou pitelností."
+      },
+      {
+        "id": "beer-pub-573-2",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 41,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      }
+    ]
+  },
+  {
+    "id": "pub-574",
+    "name": "Sportovní areál Pražačka - u hřiště",
+    "lat": 50.094004,
+    "lng": 14.447159,
+    "address": "Za Žižkovskou vozovnou 2716/19, 130 00 Praha 3",
+    "notes": "Sportovní areál Pražačka s občerstvením u hřiště.",
+    "beers": [
+      {
+        "id": "beer-pub-574-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 45,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      },
+      {
+        "id": "beer-pub-574-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 45,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-575",
+    "name": "Svět piva",
+    "lat": 50.082235,
+    "lng": 14.450238,
+    "address": "Havlíčkovo náměstí 670/7, 130 00 Praha 3",
+    "notes": "Podnik orientovaný na pivo na Havlíčkově náměstí.",
+    "beers": [
+      {
+        "id": "beer-pub-575-1",
+        "name": "Rychtář 12°",
+        "degrees": "12°",
+        "price": 45,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Rychtář 12°."
+      },
+      {
+        "id": "beer-pub-575-2",
+        "name": "Klášter 12° Premium",
+        "degrees": "12°",
+        "price": 45,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Klášter 12° Premium."
+      }
+    ]
+  },
+  {
+    "id": "pub-576",
+    "name": "Thai Long 1",
+    "lat": 50.088613,
+    "lng": 14.445208,
+    "address": "Seifertova 682/81, 130 00 Praha 3",
+    "notes": "Asijská restaurace v Seifertově ulici.",
+    "beers": []
+  },
+  {
+    "id": "pub-577",
+    "name": "Tunel",
+    "lat": 50.081379,
+    "lng": 14.449994,
+    "address": "Koněvova 895/59, 130 00 Praha 3",
+    "notes": "Lokální podnik na Koněvově s čepovanými pivy.",
+    "beers": [
+      {
+        "id": "beer-pub-577-1",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 29,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      },
+      {
+        "id": "beer-pub-577-2",
+        "name": "Valášek 15° IPA",
+        "degrees": "15°",
+        "price": 29,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Valášek 15° IPA."
+      }
+    ]
+  },
+  {
+    "id": "pub-578",
+    "name": "U Kozla",
+    "lat": 50.081256,
+    "lng": 14.468413,
+    "address": "Jana Želivského 1882/6, 130 00 Praha 3",
+    "notes": "Restaurace/pivnice zaměřená na sortiment Kozel.",
+    "beers": [
+      {
+        "id": "beer-pub-578-1",
+        "name": "Kozel 12°",
+        "degrees": "12°",
+        "price": 44,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Plnější ležák s kulatou chutí."
+      },
+      {
+        "id": "beer-pub-578-2",
+        "name": "Kozel 11°",
+        "degrees": "11°",
+        "price": 44,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Jemný ležák s vyváženým tělem a sladovým profilem."
+      }
+    ]
+  },
+  {
+    "id": "pub-579",
+    "name": "U Kulaté báby",
+    "lat": 50.083548,
+    "lng": 14.45576,
+    "address": "Řehořova 1022/40, 130 00 Praha 3",
+    "notes": "Klasická menší hospoda v Řehořově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-579-1",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 23,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      }
+    ]
+  },
+  {
+    "id": "pub-580",
+    "name": "U Lapáčků",
+    "lat": 50.08943,
+    "lng": 14.455853,
+    "address": "Pod Jarovem 2812/8, 130 00 Praha 3",
+    "notes": "Podnik v oblasti Jarova.",
+    "beers": [
+      {
+        "id": "beer-pub-580-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 69,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-581",
+    "name": "U Mariánského Obrazu",
+    "lat": 50.085613,
+    "lng": 14.464264,
+    "address": "Kubelíkova 1089/22, 130 00 Praha 3",
+    "notes": "Restaurace s tankovou plzní a černým Kozlem.",
+    "beers": [
+      {
+        "id": "beer-pub-581-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 73,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-581-2",
+        "name": "Velkopopovický Kozel černý",
+        "degrees": "10°",
+        "price": 73,
+        "style": "Tmavé výčepní",
+        "brewery": "Pivovar Velké Popovice",
+        "description": "Tmavé pivo s karamelovými a praženými tóny."
+      }
+    ]
+  },
+  {
+    "id": "pub-582",
+    "name": "U Štíra",
+    "lat": 50.081778,
+    "lng": 14.443286,
+    "address": "Řehořova 1039/54, 130 00 Praha 3",
+    "notes": "Lokální podnik v Řehořově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-582-1",
+        "name": "Gambrinus 11° Excelent",
+        "degrees": "11°",
+        "price": 45,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Dobře pitelný ležák s jemnou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-583",
+    "name": "V kapslovně",
+    "lat": 50.084114,
+    "lng": 14.476099,
+    "address": "Pod Parukářkou 39/4, 130 00 Praha 3",
+    "notes": "Podnik v lokalitě Kapslovna/Parukářka.",
+    "beers": [
+      {
+        "id": "beer-pub-583-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 25,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      }
+    ]
+  },
+  {
+    "id": "pub-584",
+    "name": "Vampír Žižkov",
+    "lat": 50.085023,
+    "lng": 14.464809,
+    "address": "Nad Ohradou 2667/17, 130 00 Praha 3",
+    "notes": "Podnik/klub v oblasti Nad Ohradou.",
+    "beers": []
+  },
+  {
+    "id": "pub-585",
+    "name": "Venda Bar",
+    "lat": 50.084161,
+    "lng": 14.454538,
+    "address": "Jana Želivského 1860/27, 130 00 Praha 3",
+    "notes": "Bar v ulici Jana Želivského s budvarským sortimentem.",
+    "beers": [
+      {
+        "id": "beer-pub-585-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 54,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-585-2",
+        "name": "Budějovický Budvar 11° Budvar 33",
+        "degrees": "11°",
+        "price": 54,
+        "style": "Světlý ležák",
+        "brewery": "Budějovický Budvar",
+        "description": "Hořčí ležák z řady Budvar 33."
+      }
+    ]
+  },
+  {
+    "id": "pub-586",
+    "name": "Veranda u Zajíce",
+    "lat": 50.092664,
+    "lng": 14.453489,
+    "address": "Lukášova 188/6, 130 00 Praha 3",
+    "notes": "Podnik se sortimentem piv Kynšperský Zajíc.",
+    "beers": [
+      {
+        "id": "beer-pub-586-1",
+        "name": "Kynšperský Zajíc 12°",
+        "degrees": "12°",
+        "price": 35,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Kynšperský Zajíc 12°."
+      },
+      {
+        "id": "beer-pub-586-2",
+        "name": "Kynšperský Zajíc 12° Tmavý",
+        "degrees": "12°",
+        "price": 35,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Kynšperský Zajíc 12° Tmavý."
+      }
+    ]
+  },
+  {
+    "id": "pub-587",
+    "name": "Vinný Bar Kosík",
+    "lat": 50.09249,
+    "lng": 14.469455,
+    "address": "Blahníkova 610/3, 130 00 Praha 3",
+    "notes": "Vinný bar s dostupným čepovaným pivem.",
+    "beers": [
+      {
+        "id": "beer-pub-587-1",
+        "name": "Primátor 11°",
+        "degrees": "11°",
+        "price": 42,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Primátor 11°."
+      }
+    ]
+  },
+  {
+    "id": "pub-588",
+    "name": "Víno MaM",
+    "lat": 50.088618,
+    "lng": 14.457,
+    "address": "Sudoměřská 1707/19, 130 00 Praha 3",
+    "notes": "Vinotéka/bar v Sudoměřské ulici s pivy Bakalář.",
+    "beers": [
+      {
+        "id": "beer-pub-588-1",
+        "name": "Bakalář 11°",
+        "degrees": "11°",
+        "price": 33,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Bakalář 11°."
+      },
+      {
+        "id": "beer-pub-588-2",
+        "name": "Bakalář 12° Černovar",
+        "degrees": "12°",
+        "price": 33,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Bakalář 12° Černovar."
+      }
+    ]
+  },
+  {
+    "id": "pub-589",
+    "name": "Visitor Club",
+    "lat": 50.079345,
+    "lng": 14.462629,
+    "address": "Koněvova 158/43, 130 00 Praha 3",
+    "notes": "Club/bar na Koněvově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-589-1",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 35,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      },
+      {
+        "id": "beer-pub-589-2",
+        "name": "Gambrinus 10°",
+        "degrees": "10°",
+        "price": 35,
+        "style": "Světlé výčepní",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Lehké výčepní pivo pro každodenní pití."
+      }
+    ]
+  },
+  {
+    "id": "pub-590",
+    "name": "Výčep Cypher",
+    "lat": 50.08524,
+    "lng": 14.453489,
+    "address": "Chlumova Eso, 130 00 Praha 3",
+    "notes": "Výčepní podnik v okolí Chlumovy ulice.",
+    "beers": [
+      {
+        "id": "beer-pub-590-1",
+        "name": "Radegast 12°",
+        "degrees": "12°",
+        "price": 65,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Radegast",
+        "description": "Hořký ležák s výrazným chmelovým charakterem."
+      },
+      {
+        "id": "beer-pub-590-2",
+        "name": "Pilsner Urquell",
+        "degrees": "12°",
+        "price": 65,
+        "style": "Světlý ležák",
+        "brewery": "Plzeňský Prazdroj",
+        "description": "Ikonický český ležák s výraznou chmelovou hořkostí."
+      }
+    ]
+  },
+  {
+    "id": "pub-591",
+    "name": "XT3 Hudební klub",
+    "lat": 50.081919,
+    "lng": 14.460803,
+    "address": "Rokycanova 707/29, 130 00 Praha 3",
+    "notes": "Hudební klub v Rokycanově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-591-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 27,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      },
+      {
+        "id": "beer-pub-591-2",
+        "name": "Hoegaarden",
+        "degrees": "11°",
+        "price": 27,
+        "style": "Pšeničné pivo",
+        "brewery": "Hoegaarden",
+        "description": "Belgické pšeničné pivo s kořenitým profilem."
+      }
+    ]
+  },
+  {
+    "id": "pub-592",
+    "name": "Yang Zi Jiang",
+    "lat": 50.085457,
+    "lng": 14.445665,
+    "address": "Koněvova 1497/108, 130 00 Praha 3",
+    "notes": "Asijská restaurace na Koněvově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-592-1",
+        "name": "Budějovický Budvar 10°",
+        "degrees": "10°",
+        "price": 28,
+        "style": "Světlé výčepní",
+        "brewery": "Budějovický Budvar",
+        "description": "Světlé výčepní pivo z Budějovic."
+      }
+    ]
+  },
+  {
+    "id": "pub-593",
+    "name": "yes burger",
+    "lat": 50.083954,
+    "lng": 14.449313,
+    "address": "Seifertova 1527/16, 130 00 Praha 3",
+    "notes": "Burger podnik v Seifertově ulici s čepovaným pivem.",
+    "beers": [
+      {
+        "id": "beer-pub-593-1",
+        "name": "Svijany 11° Máz",
+        "degrees": "11°",
+        "price": 32,
+        "style": "Světlý ležák",
+        "brewery": "Pivovar Svijany",
+        "description": "Tradiční svijanský ležák s dobrou pitelností."
+      },
+      {
+        "id": "beer-pub-593-2",
+        "name": "Duff Beer",
+        "degrees": "?",
+        "price": 32,
+        "style": "Světlý ležák",
+        "brewery": "Duff",
+        "description": "Licenční světlé pivo známé popkulturním brandingem."
+      }
+    ]
+  },
+  {
+    "id": "pub-594",
+    "name": "Základna",
+    "lat": 50.087859,
+    "lng": 14.451764,
+    "address": "Lipanská 835/3, 130 00 Praha 3",
+    "notes": "Podnik v Lipanské ulici se Staropramenem.",
+    "beers": [
+      {
+        "id": "beer-pub-594-1",
+        "name": "Staropramen 10°",
+        "degrees": "10°",
+        "price": 28,
+        "style": "Světlé výčepní",
+        "brewery": "Pivovary Staropramen",
+        "description": "Pražské výčepní pivo s lehkým tělem."
+      },
+      {
+        "id": "beer-pub-594-2",
+        "name": "Staropramen 12°",
+        "degrees": "12°",
+        "price": 28,
+        "style": "Světlý ležák",
+        "brewery": "Pivovary Staropramen",
+        "description": "Plnější světlý ležák."
+      }
+    ]
+  },
+  {
+    "id": "pub-595",
+    "name": "Zelená Perla",
+    "lat": 50.076162,
+    "lng": 14.459202,
+    "address": "Jeseniova 1506/63, 130 00 Praha 3",
+    "notes": "Podnik v Jeseniově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-595-1",
+        "name": "Rychtář 11°",
+        "degrees": "11°",
+        "price": 52,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Rychtář 11°."
+      }
+    ]
+  },
+  {
+    "id": "pub-596",
+    "name": "Želva beers & burgers",
+    "lat": 50.085757,
+    "lng": 14.450902,
+    "address": "Jana Želivského 1806/23, 130 00 Praha 3",
+    "notes": "Beers & burgers koncept na Jana Želivského.",
+    "beers": [
+      {
+        "id": "beer-pub-596-1",
+        "name": "Starosta 12°",
+        "degrees": "12°",
+        "price": 55,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Starosta 12°."
+      },
+      {
+        "id": "beer-pub-596-2",
+        "name": "Starokladno 12,8° Černý havíř",
+        "degrees": "12,8°",
+        "price": 55,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Starokladno 12,8° Černý havíř."
+      }
+    ]
+  },
+  {
+    "id": "pub-597",
+    "name": "Žižcafé Therapy",
+    "lat": 50.087099,
+    "lng": 14.452138,
+    "address": "Žerotínova 1220/31, 130 00 Praha 3",
+    "notes": "Kavárna/bistro v Žerotínově ulici.",
+    "beers": [
+      {
+        "id": "beer-pub-597-1",
+        "name": "Chříč 10° Oranžový expres",
+        "degrees": "10°",
+        "price": 60,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Chříč 10° Oranžový expres."
+      }
+    ]
+  },
+  {
+    "id": "pub-598",
+    "name": "Žižkov na Žižkově",
+    "lat": 50.094376,
+    "lng": 14.461316,
+    "address": "Chelčického 1153/14, 130 00 Praha 3",
+    "notes": "Podnik s tematickou vazbou na Moravský Žižkov.",
+    "beers": [
+      {
+        "id": "beer-pub-598-1",
+        "name": "Moravský Žižkov 11° Žižkovský ležák",
+        "degrees": "11°",
+        "price": 57,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Moravský Žižkov 11° Žižkovský ležák."
+      },
+      {
+        "id": "beer-pub-598-2",
+        "name": "Moravský Žižkov 10° Divočák",
+        "degrees": "10°",
+        "price": 57,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Moravský Žižkov 10° Divočák."
+      }
+    ]
+  },
+  {
+    "id": "pub-599",
+    "name": "Žižkovské pivobraní",
+    "lat": 50.093393,
+    "lng": 14.446424,
+    "address": "Chelčického 45/41, 130 00 Praha 3",
+    "notes": "Pivní akce/podnik evidovaný s rozsáhlejší craftovou nabídkou.",
+    "beers": [
+      {
+        "id": "beer-pub-599-1",
+        "name": "Pacov 14° Kokos Milkshake NEIPA",
+        "degrees": "14°",
+        "price": 70,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Pacov 14° Kokos Milkshake NEIPA."
+      },
+      {
+        "id": "beer-pub-599-2",
+        "name": "Valášek 17° Zbořená ovca",
+        "degrees": "17°",
+        "price": 70,
+        "style": "Pivo / speciál",
+        "brewery": "Neověřeno",
+        "description": "Položka čepovaného piva uváděná u podniku: Valášek 17° Zbořená ovca."
+      }
+    ]
+  },
+  {
+    "id": "pub-600",
+    "name": "Pivnice Parukářka",
+    "lat": 50.083015,
+    "lng": 14.453638,
+    "address": "Prokopova / Pod Parukářkou 2760/10, 130 00 Praha 3",
+    "notes": "Hospoda u parku Parukářka se zahrádkou a kulturními akcemi.",
+    "beers": []
   }
 ]
