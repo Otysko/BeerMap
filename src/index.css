@@ -10,6 +10,21 @@
   --color-beer-amber: #d97706;
 }
 
+/* Strict mobile viewport locking prevents random scrolling or layout jumps under virtual keyboards */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  -webkit-text-size-adjust: 100%;
+}
+
 /* Custom styles for flawless UI */
 * {
   scrollbar-width: thin !important;

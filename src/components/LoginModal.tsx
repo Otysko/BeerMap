@@ -14,7 +14,19 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const [errorMsg, setErrorMsg] = useState("");
   const [isGisLoaded, setIsGisLoaded] = useState(false);
 
-  const isIframe = typeof window !== "undefined" && window.self !== window.top;
+  // Resilient check for iframes to prevent Cross-Origin SecurityErrors in strict mobile contexts
+  const [isIframe, setIsIframe] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        setIsIframe(window.self !== window.top);
+      }
+    } catch (e) {
+      console.warn("Exception checking window context, defaulting to iframe sandbox:", e);
+      setIsIframe(true);
+    }
+  }, []);
 
   // Parse JWT token from Google Identity credential
   const parseGoogleJwt = (token: string) => {

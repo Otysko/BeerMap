@@ -1,0 +1,34 @@
+name: pivni_mapa
+description: "Pivní Mapa - Mobilní aplikace pro pivní fajnšmekry (Android & iOS)"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Pro uložení pivního pasu, historie a profilu přímo v mobilu
+  shared_preferences: ^2.2.2
+
+  # Pro zobrazení interaktivní mapy hospod
+  google_maps_flutter: ^2.5.3
+
+  # Pro práci s datem (české formátování, dny v týdnu apod.)
+  intl: ^0.19.0
+
+  # Pro generování avatarů přes DiceBear API
+  http: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/pubs_data.json

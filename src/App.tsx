@@ -32,7 +32,7 @@ export default function App() {
   const [isBeerModalOpen, setIsBeerModalOpen] = useState(false);
   const [editingBeer, setEditingBeer] = useState<Beer | null>(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // For mobile menu collapse
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For mobile menu collapse (default closed as requested)
 
   // Active user location for proximity queries in AI
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -393,7 +393,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col bg-slate-950 font-sans text-slate-100 overflow-hidden">
+    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col bg-slate-950 font-sans text-slate-100 overflow-hidden select-none">
       
       {/* 🍺 TOP NAVIGATION BAR HEADER */}
       <header className="flex-shrink-0 bg-slate-900 border-b border-amber-500/30 px-6 py-3.5 flex items-center justify-between shadow-md">

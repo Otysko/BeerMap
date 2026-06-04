@@ -86,6 +86,10 @@ export function BeerPassport({
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [newNameInput, setNewNameInput] = useState(userProfile.name);
 
+  // Pagination limits for long lists
+  const [placesLimit, setPlacesLimit] = useState(15);
+  const [historyLimit, setHistoryLimit] = useState(15);
+
   if (!isOpen) return null;
 
   // Compute achievements list dynamically based on passport visits list and sort unlocked/obtained achievements first
@@ -275,19 +279,14 @@ export function BeerPassport({
             {/* Avatar Selector Grid */}
             <div className="space-y-1">
               <label className="text-[9.5px] font-black text-slate-500 uppercase tracking-widest block">
-                Zvol si svůj vzhled (včetně světlého muže s blond vlasy a neutrálních):
+                Zvol si svůj vzhled:
               </label>
               <div className="grid grid-cols-6 gap-1.5 pt-1">
                 {[
                   {
                     id: "blonde_male",
-                    name: "Štamgast (Světlý/Blond)",
+                    name: "Štamgast (Blonďatý)",
                     url: "https://api.dicebear.com/7.x/avataaars/svg?seed=blondeMaleUser&top[]=shortRound&hairColor[]=e8c170&skinColor[]=ffdbac"
-                  },
-                  {
-                    id: "dark_male",
-                    name: "Štamgast (Tmavovlasý)",
-                    url: "https://api.dicebear.com/7.x/avataaars/svg?seed=cernovlasyKluk&top[]=shortHair&hairColor[]=2c1b18&skinColor[]=ffdbac"
                   },
                   {
                     id: "blonde_female",
@@ -295,19 +294,24 @@ export function BeerPassport({
                     url: "https://api.dicebear.com/7.x/avataaars/svg?seed=blondynaStamgast&top[]=longHair&hairColor[]=e8c170&skinColor[]=ffdbac"
                   },
                   {
-                    id: "crown_gold",
-                    name: "Koruna krále piv",
-                    url: "https://api.dicebear.com/7.x/shapes/svg?seed=pivnikralcool&backgroundColor=f59e0b"
+                    id: "initials_amber",
+                    name: "Moje Iniciály",
+                    url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userProfile.name)}&backgroundColor=f59e0b&textColor=0f172a&fontWeight=800`
                   },
                   {
                     id: "pohar_gold",
-                    name: "Zlatý pohár",
+                    name: "Zlatý pohár (Abstraktní)",
+                    url: "https://api.dicebear.com/7.x/shapes/svg?seed=pivnikralcool&backgroundColor=f59e0b"
+                  },
+                  {
+                    id: "shield_emerald",
+                    name: "Smaragdová hvězda (Abstraktní)",
                     url: "https://api.dicebear.com/7.x/shapes/svg?seed=pivnihvezda&backgroundColor=10b981"
                   },
                   {
-                    id: "shield_gold",
-                    name: "Pivní štít",
-                    url: "https://api.dicebear.com/7.x/shapes/svg?seed=pivnicech&backgroundColor=6366f1"
+                    id: "pixel_head",
+                    name: "Retro štamgast (Pixel)",
+                    url: "https://api.dicebear.com/7.x/pixel-art/svg?seed=beerhead&backgroundColor=6366f1"
                   }
                 ].map((av) => (
                   <button
@@ -573,43 +577,61 @@ export function BeerPassport({
               </div>
             ) : (
               <div className="space-y-2.5">
-                {/* Dynamically filter unique pubs and render details */}
-                {Array.from(new Set(passport.visits.map((v) => JSON.stringify({id: v.pubId, name: v.pubName}))))
-                  .map((strVal) => {
-                    const parsed = JSON.parse(strVal);
-                    // count total unique calendar days on which user visited this pub
-                    const dailySet = new Set(
-                      passport.visits
-                        .filter((v) => v.pubId === parsed.id)
-                        .map((v) => v.timestamp ? new Date(v.timestamp).toLocaleDateString("cs-CZ") : new Date().toLocaleDateString("cs-CZ"))
-                    );
-                    const count = dailySet.size;
-                    
-                    // list beers consumed in this pub
-                    const beersHere = Array.from(new Set(
-                      passport.visits
-                        .filter((v) => v.pubId === parsed.id && v.beerName !== null)
-                        .map((v) => `${v.beerName}${v.degrees ? ` (${v.degrees})` : ""}`)
-                    )).join(", ");
+                {(() => {
+                  const allPlaces = Array.from(new Set(passport.visits.map((v) => JSON.stringify({id: v.pubId, name: v.pubName}))));
+                  const visiblePlaces = allPlaces.slice(0, placesLimit);
+                  const hasMore = allPlaces.length > placesLimit;
 
-                    return (
-                      <div key={parsed.id} className="p-4 bg-slate-950 border border-amber-500/10 rounded-2xl flex justify-between items-center hover:border-amber-500/20 transition-all">
-                        <div className="space-y-1 overflow-hidden">
-                          <h5 className="text-xs font-bold text-slate-100 font-display">
-                            {parsed.name}
-                          </h5>
-                          <div className="flex gap-2 text-[10px] text-slate-400 font-medium">
-                            <span className="text-amber-500">★ {count}x návštěva</span>
-                            {beersHere && (
-                              <span className="truncate max-w-[200px] text-slate-500 italic">
-                                Pivo: {beersHere}
-                              </span>
-                            )}
+                  return (
+                    <>
+                      {visiblePlaces.map((strVal) => {
+                        const parsed = JSON.parse(strVal);
+                        // count total unique calendar days on which user visited this pub
+                        const dailySet = new Set(
+                          passport.visits
+                            .filter((v) => v.pubId === parsed.id)
+                            .map((v) => v.timestamp ? new Date(v.timestamp).toLocaleDateString("cs-CZ") : new Date().toLocaleDateString("cs-CZ"))
+                        );
+                        const count = dailySet.size;
+                        
+                        // list beers consumed in this pub
+                        const beersHere = Array.from(new Set(
+                          passport.visits
+                            .filter((v) => v.pubId === parsed.id && v.beerName !== null)
+                            .map((v) => `${v.beerName}${v.degrees ? ` (${v.degrees})` : ""}`)
+                        )).join(", ");
+
+                        return (
+                          <div key={parsed.id} className="p-4 bg-slate-950 border border-amber-500/10 rounded-2xl flex justify-between items-center hover:border-amber-500/20 transition-all">
+                            <div className="space-y-1 overflow-hidden">
+                              <h5 className="text-xs font-bold text-slate-100 font-display">
+                                {parsed.name}
+                              </h5>
+                              <div className="flex gap-2 text-[10px] text-slate-400 font-medium">
+                                <span className="text-amber-500">★ {count}x návštěva</span>
+                                {beersHere && (
+                                  <span className="truncate max-w-[200px] text-slate-500 italic">
+                                    Pivo: {beersHere}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+
+                      {hasMore && (
+                        <button
+                          type="button"
+                          onClick={() => setPlacesLimit((prev) => prev + 15)}
+                          className="w-full py-2.5 text-xs font-bold text-amber-500 hover:text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/30 rounded-xl transition cursor-pointer select-none"
+                        >
+                          Načíst dalších 15 hospod ({allPlaces.length - placesLimit} zbývá)
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -804,78 +826,96 @@ export function BeerPassport({
               </div>
             ) : (
               <div className="space-y-2.5">
-                {[...passport.visits]
-                  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                  .map((visit) => (
-                    <div 
-                      key={visit.id} 
-                      className="p-3.5 bg-slate-950 border border-slate-850 hover:border-amber-500/10 rounded-2xl flex justify-between items-center gap-4 transition group"
-                    >
-                      <div className="space-y-1 overflow-hidden">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] text-slate-500 font-semibold uppercase leading-none">
-                            {new Date(visit.timestamp).toLocaleDateString("cs-CZ", { 
-                              day: "numeric", 
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit"
-                            })}
-                          </span>
-                          <span className="text-[10px] text-slate-600">|</span>
-                          <span className="text-xs font-bold text-amber-500 truncate leading-none font-display">
-                            {visit.pubName}
-                          </span>
-                        </div>
-                        
-                        <p className="text-xs text-slate-200 font-medium flex items-center gap-1">
-                          <Beer className="w-3 h-3 text-slate-500" />
-                          {visit.beerName ? (
-                            <span>
-                              {visit.beerName}{visit.degrees ? ` (${visit.degrees})` : ""}{visit.brewery ? ` od ${visit.brewery}` : ""}
-                            </span>
-                          ) : (
-                            <span className="text-slate-500 italic text-[11px]">Čistá návštěva (bez piva)</span>
-                          )}
-                        </p>
+                {(() => {
+                  const sortedVisits = [...passport.visits].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                  const visibleVisits = sortedVisits.slice(0, historyLimit);
+                  const hasMore = sortedVisits.length > historyLimit;
 
-                        {visit.style && (
-                          <span className="inline-block text-[9px] bg-slate-900 text-slate-400 border border-slate-850 px-1.5 py-0.5 rounded">
-                            Styl: {visit.style}
-                          </span>
-                        )}
-                      </div>
+                  return (
+                    <>
+                      {visibleVisits.map((visit) => (
+                        <div 
+                          key={visit.id} 
+                          className="p-3.5 bg-slate-950 border border-slate-850 hover:border-amber-500/10 rounded-2xl flex justify-between items-center gap-4 transition group"
+                        >
+                          <div className="space-y-1 overflow-hidden">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] text-slate-500 font-semibold uppercase leading-none">
+                                {new Date(visit.timestamp).toLocaleDateString("cs-CZ", { 
+                                  day: "numeric", 
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })}
+                              </span>
+                              <span className="text-[10px] text-slate-600">|</span>
+                              <span className="text-xs font-bold text-amber-500 truncate leading-none font-display">
+                                {visit.pubName}
+                              </span>
+                            </div>
+                            
+                            <p className="text-xs text-slate-200 font-medium flex items-center gap-1">
+                              <Beer className="w-3 h-3 text-slate-500" />
+                              {visit.beerName ? (
+                                <span>
+                                  {visit.beerName}{visit.degrees ? ` (${visit.degrees})` : ""}{visit.brewery ? ` od ${visit.brewery}` : ""}
+                                </span>
+                              ) : (
+                                <span className="text-slate-500 italic text-[11px]">Čistá návštěva (bez piva)</span>
+                              )}
+                            </p>
 
-                      <div className="flex-shrink-0">
-                        {deletingVisitId === visit.id ? (
-                          <div className="flex items-center gap-1 animate-fadeIn">
-                            <button
-                              onClick={async () => {
-                                await onDeleteVisit(visit.id);
-                                setDeletingVisitId(null);
-                              }}
-                              className="text-[9px] font-bold bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded cursor-pointer"
-                            >
-                              Ano
-                            </button>
-                            <button
-                              onClick={() => setDeletingVisitId(null)}
-                              className="text-[9px] bg-slate-800 text-slate-350 px-1.5 py-1 rounded hover:bg-slate-700 cursor-pointer"
-                            >
-                              Ne
-                            </button>
+                            {visit.style && (
+                              <span className="inline-block text-[9px] bg-slate-900 text-slate-400 border border-slate-850 px-1.5 py-0.5 rounded">
+                                Styl: {visit.style}
+                              </span>
+                            )}
                           </div>
-                        ) : (
-                          <button
-                            onClick={() => setDeletingVisitId(visit.id)}
-                            className="p-1 px-1.5 text-slate-500 hover:text-red-400 hover:bg-red-950/20 rounded-lg transition opacity-60 group-hover:opacity-100 cursor-pointer"
-                            title="Smazat záznam z historie"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+
+                          <div className="flex-shrink-0">
+                            {deletingVisitId === visit.id ? (
+                              <div className="flex items-center gap-1 animate-fadeIn">
+                                <button
+                                  onClick={async () => {
+                                    await onDeleteVisit(visit.id);
+                                    setDeletingVisitId(null);
+                                  }}
+                                  className="text-[9px] font-bold bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded cursor-pointer"
+                                >
+                                  Ano
+                                </button>
+                                <button
+                                  onClick={() => setDeletingVisitId(null)}
+                                  className="text-[9px] bg-slate-800 text-slate-350 px-1.5 py-1 rounded hover:bg-slate-700 cursor-pointer"
+                                >
+                                  Ne
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setDeletingVisitId(visit.id)}
+                                className="p-1 px-1.5 text-slate-500 hover:text-red-400 hover:bg-red-950/20 rounded-lg transition opacity-60 group-hover:opacity-100 cursor-pointer"
+                                title="Smazat záznam z historie"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                      {hasMore && (
+                        <button
+                          type="button"
+                          onClick={() => setHistoryLimit((prev) => prev + 15)}
+                          className="w-full py-2.5 text-xs font-bold text-amber-500 hover:text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/30 rounded-xl transition cursor-pointer select-none"
+                        >
+                          Načíst dalších 15 záznamů ({sortedVisits.length - historyLimit} zbývá)
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>

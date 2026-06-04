@@ -153,8 +153,17 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
         }),
       });
 
+      let errorMessage = "Bartender API error";
       if (!res.ok) {
-        throw new Error("Bartender API error");
+        try {
+          const errData = await res.json();
+          if (errData && errData.fallback) {
+            errorMessage = errData.fallback;
+          } else if (errData && errData.error) {
+            errorMessage = errData.error;
+          }
+        } catch { /* ignore JSON parse error */ }
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -168,14 +177,18 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
       setMessages((prev) => [...prev, bartenderMsg]);
     } catch (err: any) {
       console.error(err);
-      setError("Asi jsem trochu přebral a motá se mi hlava. Dej mi chvilku, nebo zkus zprávu poslat znova!");
+      const isKeyMissing = err.message && (err.message.includes("GEMINI_API_KEY") || err.message.includes("sanitaci") || err.message.includes("key is missing") || err.message.includes("API key"));
+      
+      setError(err.message || "Asi jsem trochu přebral a motá se mi hlava. Dej mi chvilku, nebo zkus zprávu poslat znova!");
       
       // Standalone mockup backup so the chat works even during errors
       setMessages((prev) => [
         ...prev,
         {
           role: "model",
-          text: "Sakra, asi jsem přebral a momentálně nejsem schopen smysluplně odpovědět! 🍻 Točí se se mnou celý lokál a pípa stávkuje. \n\nDej si mezitím jedno studené točené, prohlédni si naše skvělé hospůdky na mapě nebo zkus napsat za chviličku znovu, až spláchnu tenhle ležák sklenicí čisté vody!",
+          text: isKeyMissing
+            ? "🍻 **Chyba nastavení**: Vypadá to, že tvůj drahý Hospodský Kecal nemá k dispozici svůj mozkový pohon — chybí klíč **`GEMINI_API_KEY`**.\n\n**Jak to zachránit bez odhalení kódu?**\n1. Otevři svou administraci na **Render.com** (nebo jiném hostingu).\n2. Jdi do nastavení své aplikace a najdi záložku **Environment Variables** (nebo *Environment*).\n3. Přidej novou proměnnou:\n   - **Klíč (Key):** `GEMINI_API_KEY`\n   - **Hodnota (Value):** *(Vlož svůj tajný klíč z Google AI Studio)*\n4. Ulož změny a nechej aplikaci znovu sestavit (*Redeploy*).\n\nTím se tvůj klíč bezpečně uloží v šifrovaném prostředí Renderu a nikdo ho neuvidí ve tvém veřejném kódu na GitHubu! Do té doby ti rádi natočíme pivo tady na mapě!"
+            : "Sakra, asi jsem přebral a momentálně nejsem schopen smysluplně odpovědět! 🍻 Točí se se mnou celý lokál a pípa stávkuje. \n\nDej si mezitím jedno studené točené, prohlédni si naše skvělé hospůdky na mapě nebo zkus napsat za chviličku znovu, až spláchnu tenhle ležák sklenicí čisté vody!",
           timestamp: new Date().toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" }),
         }
       ]);
