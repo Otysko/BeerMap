@@ -199,8 +199,8 @@ export default function AddBeerModal({
 
             {/* Price */}
             <div className="space-y-1.5 font-sans">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Cena (Kč za půllitr) <span className="text-red-400">*</span>
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider whitespace-nowrap">
+                Cena za půllitr <span className="text-red-400 font-bold">*</span>
               </label>
               <div className="relative flex items-center">
                 <input
