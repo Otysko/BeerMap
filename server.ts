@@ -1052,7 +1052,7 @@ app.post("/api/gemini/beer-info", async (req, res) => {
     const prompt = `Navrhni pivní detaily pro zadané pivo "${beerName}". Použij k tomu své pivovarnické znalosti, typické stupně a styl, kterým je v České republice známé. Pokud se jedná o neznámé pivo, odhadni odpovídající údaje realisticky podle českých tradic.`;
     
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-3.1-flash-lite",
       contents: prompt,
       config: {
         systemInstruction: "Jste přední český pivní expert, sládek a someliér. Vaším úkolem je poskytovat přesné, detailní a realistické informace o různých značkách a druzích piv, zejména o stupňovitosti, stylu (např. ležák, ejl, tmavé, stout atd.), výrobci (pivovaru) a krátkou vtipnou tasting poznámku v češtině.",
@@ -1124,7 +1124,7 @@ Pište stručně, lidově, poutavě. Používejte české pivní výrazy (piveč
     }));
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-3.1-flash-lite",
       contents: contents,
       config: {
         systemInstruction,
