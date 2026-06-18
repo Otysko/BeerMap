@@ -1085,7 +1085,7 @@ app.post("/api/gemini/beer-info", async (req, res) => {
       degrees: "12°",
       style: "Světlý ležák",
       brewery: "Neznámý pivovar",
-      notes: "Informace nebyly staženy (zkontrolujte GEMINI_API_KEY). Česká klasika, která nikdy nezklame."
+      notes: "Poctivé a dobře ošetřené pivečko. Česká klasika, která nikdy nezklame."
     });
   }
 });
@@ -1139,7 +1139,7 @@ Pište stručně, lidově, poutavě. Používejte české pivní výrazy (piveč
     console.error("Gemini chat failed:", error);
     res.status(500).json({ 
       error: "Nepodařilo se komunikovat se znalcem piva.",
-      fallback: "Ahoj! Vypadá to, že můj výčepní modul má zrovna sanitaci (chybí GEMINI_API_KEY nebo selhalo spojení). Ale pivo čepujeme dál! Můžeš si vesele klikat do mapy a zakládat své oblíbené hospůdky."
+      fallback: "Ahoj štamgaste! 🍻 Vypadá to, že můj výčepní modul má zrovna sanitaci trubek, takže si teď nemůžeme takhle pokecat. Ale pivo čepujeme dál! Můžeš vesele klikat do mapy, zakládat své oblíbené hospůdky a zapisovat si je do svého Pivního Pasu."
     });
   }
 });

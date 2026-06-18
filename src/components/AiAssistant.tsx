@@ -294,9 +294,7 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
         ...prev,
         {
           role: "model",
-          text: isKeyMissing
-            ? "🍻 **Chyba nastavení**: Vypadá to, že tvůj drahý Hospodský Kecal nemá k dispozici svůj mozkový pohon — chybí klíč **`GEMINI_API_KEY`**.\n\n**Jak to zachránit bez odhalení kódu?**\n1. Otevři svou administraci na **Render.com** (nebo jiném hostingu).\n2. Jdi do nastavení své aplikace a najdi záložku **Environment Variables** (nebo *Environment*).\n3. Přidej novou proměnnou:\n   - **Klíč (Key):** `GEMINI_API_KEY`\n   - **Hodnota (Value):** *(Vlož svůj tajný klíč z Google AI Studio)*\n4. Ulož změny a nechej aplikaci znovu sestavit (*Redeploy*).\n\nTím se tvůj klíč bezpečně uloží v šifrovaném prostředí Renderu a nikdo ho neuvidí ve tvém veřejném kódu na GitHubu! Do té doby ti rádi natočíme pivo tady na mapě!"
-            : "Sakra, asi jsem přebral a momentálně nejsem schopen smysluplně odpovědět! 🍻 Točí se se mnou celý lokál a pípa stávkuje. \n\nDej si mezitím jedno studené točené, prohlédni si naše skvělé hospůdky na mapě nebo zkus napsat za chviličku znovu, až spláchnu tenhle ležák sklenicí čisté vody!",
+          text: "Sakra, vypadá to, že můj výčepní modul má zrovna neplánovanou sanitaci trubek! 🧼 Pivo sice točíme dál a v mapě můžeš vesele brouzdat nebo zakládat nové podniky, ale na dlouhé vyprávění u pultu to teď zrovna nebude.\n\nDej si mezitím jedno studené, zapiš si návštěvu do svého Pivního Pasu a zkus mi napsat znovu za chvilku, až spláchnu tenhle ležák sklenicí čisté vody!",
           timestamp: new Date().toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" }),
         }
       ]);

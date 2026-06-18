@@ -87,6 +87,17 @@ export default function MapComponent({
 
     mapInstanceRef.current = map;
 
+    // Set up ResizeObserver to dynamically update Leaflet sized tiles as container elements smoothly expand or narrow
+    const resizeObserver = new ResizeObserver(() => {
+      if (map) {
+        map.invalidateSize({ animate: false });
+      }
+    });
+
+    if (mapElementRef.current) {
+      resizeObserver.observe(mapElementRef.current);
+    }
+
     // Geolocation attempt
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -186,6 +197,7 @@ export default function MapComponent({
     setTimeout(handleBoundsChange, 500);
 
     return () => {
+      resizeObserver.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -295,9 +307,38 @@ export default function MapComponent({
     if (!mapInstanceRef.current || !selectedPubId) return;
     const pub = pubs.find((p) => p.id === selectedPubId);
     if (pub) {
-      mapInstanceRef.current.setView([pub.lat, pub.lng], 15, { animate: true, duration: 0.5 });
+      // First immediate pan to give instant response
+      mapInstanceRef.current.setView([pub.lat, pub.lng], 15, { animate: true, duration: 0.4 });
+      
+      // Delay to fine-tune alignment with transition-all layout sidebar animations (300ms)
+      const timer = setTimeout(() => {
+        if (mapInstanceRef.current && selectedPubIdRef.current === selectedPubId) {
+          mapInstanceRef.current.invalidateSize({ animate: false });
+          mapInstanceRef.current.panTo([pub.lat, pub.lng], { animate: true, duration: 0.4 });
+        }
+      }, 320);
+
+      return () => clearTimeout(timer);
     }
-  }, [selectedPubId]);
+  }, [selectedPubId, pubs]);
+
+  // 3b. Align centered map when sidebar collapses/opens
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+      if (selectedPubId) {
+        const pub = pubs.find(p => p.id === selectedPubId);
+        if (pub) {
+          map.panTo([pub.lat, pub.lng], { animate: true, duration: 0.4 });
+        }
+      }
+    }, 320);
+
+    return () => clearTimeout(timer);
+  }, [isSidebarOpen]);
 
   // 4. Sync Candidate Marker (the grey placeholder before creation)
   useEffect(() => {
@@ -422,6 +463,9 @@ export default function MapComponent({
   const handleCenterOnUser = () => {
     if (!mapInstanceRef.current || !L) return;
 
+    // Recalculate dimensions immediately before centering to ensure absolute precision
+    mapInstanceRef.current.invalidateSize({ animate: false });
+
     // 1. If we already have the tracked userLocation in state, fly to it immediately (speed-up)
     if (userLocation) {
       mapInstanceRef.current.flyTo([userLocation.lat, userLocation.lng], 15, { duration: 1.5 });
@@ -448,7 +492,10 @@ export default function MapComponent({
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          mapInstanceRef.current.flyTo([latitude, longitude], 15, { duration: 1.5 });
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize({ animate: false });
+            mapInstanceRef.current.flyTo([latitude, longitude], 15, { duration: 1.5 });
+          }
           
           const userIcon = L.divIcon({
             html: `<div class="w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-lg ring-4 ring-blue-500/30"></div>`,
