@@ -116,7 +116,7 @@ export default function MapComponent({
         (error) => {
           console.warn("Geolocation permission declined or failed:", error);
         },
-        { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
       );
     }
 
@@ -420,13 +420,36 @@ export default function MapComponent({
 
   // Find nearest pub action
   const handleCenterOnUser = () => {
-    if (navigator.geolocation && mapInstanceRef.current) {
+    if (!mapInstanceRef.current || !L) return;
+
+    // 1. If we already have the tracked userLocation in state, fly to it immediately (speed-up)
+    if (userLocation) {
+      mapInstanceRef.current.flyTo([userLocation.lat, userLocation.lng], 15, { duration: 1.5 });
+      
+      const userIcon = L.divIcon({
+        html: `<div class="w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-lg ring-4 ring-blue-500/30 animate-pulse"></div>`,
+        className: '',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+
+      if (userLocationMarkerRef.current) {
+        userLocationMarkerRef.current.setLatLng([userLocation.lat, userLocation.lng]);
+      } else {
+        userLocationMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+          .addTo(mapInstanceRef.current);
+      }
+      userLocationMarkerRef.current.bindPopup("<strong>Jste zde</strong>").openPopup();
+      return;
+    }
+
+    // 2. Hardware level query fallback in case position is not loaded yet
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           mapInstanceRef.current.flyTo([latitude, longitude], 15, { duration: 1.5 });
           
-          // Add or update marker
           const userIcon = L.divIcon({
             html: `<div class="w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-lg ring-4 ring-blue-500/30"></div>`,
             className: '',
@@ -444,9 +467,12 @@ export default function MapComponent({
         },
         (error) => {
           console.warn("Geolocation centering failed:", error);
+          alert("Nepodařilo se zaměřit vaši GPS polohu. Ujistěte se prosím, zda máte zapnuté určování polohy v nastavení telefonu a povolili jste sdílení.");
         },
-        { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
       );
+    } else {
+      alert("Určování polohy není podporováno vaším prohlížečem.");
     }
   };
 
@@ -465,12 +491,13 @@ export default function MapComponent({
     if (userLocationMarkerRef.current) {
       userLocationMarkerRef.current.setLatLng([userLocation.lat, userLocation.lng]);
     } else {
+      // Create user location marker and set initial map focus only the first time
       userLocationMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-        .addTo(map);
+        .addTo(map)
+        .bindPopup("<strong>Jste zde</strong>")
+        .openPopup();
+      map.setView([userLocation.lat, userLocation.lng], 15);
     }
-
-    userLocationMarkerRef.current.bindPopup("<strong>Jste zde</strong>").openPopup();
-    mapInstanceRef.current.setView([userLocation.lat, userLocation.lng], 15);
   }, [userLocation]);
 
   // Submit new pub creation

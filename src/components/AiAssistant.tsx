@@ -7,17 +7,26 @@ import React, { useState, useRef, useEffect } from "react";
 import { ChatMessage } from "../types";
 import { Send, Sparkles, MessageSquare, Trash2, Loader2, RefreshCw, AlertCircle, X } from "lucide-react";
 
-// Helper to format basic markdown (headers, item lines, bold, italic, code) cleanly in React
+// Helper to format basic markdown (headers, item lines, bold, italic, code) cleanly in React with full support for asterisks and underscores
 export function formatMessageText(text: string) {
   if (!text) return "";
 
   const renderInline = (str: string) => {
     if (!str) return "";
-    if (!str.includes("**") && !str.includes("*") && !str.includes("`")) {
+    if (!str.includes("**") && !str.includes("*") && !str.includes("_") && !str.includes("`")) {
       return str;
     }
-    const parts = str.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+    const parts = str.split(/(\*\*\*.*?\*\*\*|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_|`.*?`)/g);
     return parts.map((part, i) => {
+      // Bold + Italic
+      if (part.startsWith("***") && part.endsWith("***") && part.length > 6) {
+        return (
+          <strong key={i} className="font-bold italic text-amber-500">
+            {part.slice(3, -3)}
+          </strong>
+        );
+      }
+      // Bold Asterisks
       if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
         return (
           <strong key={i} className="font-bold text-amber-500">
@@ -25,6 +34,15 @@ export function formatMessageText(text: string) {
           </strong>
         );
       }
+      // Bold Underscores
+      if (part.startsWith("__") && part.endsWith("__") && part.length > 4) {
+        return (
+          <strong key={i} className="font-bold text-amber-500">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      // Italic Asterisk
       if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
         return (
           <em key={i} className="italic text-amber-100/90 font-normal">
@@ -32,6 +50,15 @@ export function formatMessageText(text: string) {
           </em>
         );
       }
+      // Italic Underscore
+      if (part.startsWith("_") && part.endsWith("_") && part.length > 2) {
+        return (
+          <em key={i} className="italic text-amber-100/90 font-normal">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+      // Code tags
       if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
         return (
           <code key={i} className="font-mono bg-slate-950/80 px-1 py-0.5 rounded text-amber-400 text-xs border border-amber-500/10">
@@ -52,8 +79,11 @@ export function formatMessageText(text: string) {
         if (headerMatch) {
           const content = headerMatch[2];
           return (
-            <div key={idx} className="font-display font-bold text-amber-500 text-xs uppercase tracking-wider mt-4 mb-2 first:mt-0 leading-snug">
-              {renderInline(content)}
+            <div key={idx} className="font-display font-bold text-amber-405 mt-4 mb-2 first:mt-0 leading-snug flex items-center gap-1.5 border-b border-amber-500/10 pb-1">
+              <span className="text-amber-500 text-xs">🍺</span>
+              <span className="text-xs uppercase tracking-wider text-amber-400">
+                {renderInline(content)}
+              </span>
             </div>
           );
         }
@@ -131,7 +161,17 @@ function getPresetQueriesList(beer: string) {
 }
 
 export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerName }: AiAssistantProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    try {
+      const saved = sessionStorage.getItem("hospodsky_kecal_chat_history");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Failed to load chat history from sessionStorage:", e);
+    }
+    return [];
+  });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -156,7 +196,20 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
     setSelectedPresets(selected.sort(() => 0.5 - Math.random()));
   };
 
-  // Initialize with a warm greeting from the virtual Bartender and load initial presets
+  // Sync state to sessionStorage whenever messages content updates
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        sessionStorage.setItem("hospodsky_kecal_chat_history", JSON.stringify(messages));
+      } else {
+        sessionStorage.removeItem("hospodsky_kecal_chat_history");
+      }
+    } catch (e) {
+      console.error("Failed to save chat history to sessionStorage:", e);
+    }
+  }, [messages]);
+
+  // Initialize with a warm greeting from the virtual Bartender if history is currently empty
   useEffect(() => {
     handleRandomizePresets();
     if (messages.length === 0) {
@@ -254,13 +307,19 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
 
   const handleClearHistory = () => {
     if (confirm("Chcete vymazat historii povídání s výčepním?")) {
-      setMessages([
+      const cleared = [
         {
-          role: "model",
+          role: "model" as const,
           text: "Začínáme s čistým stolem! 🧼 Trubky propláchnuté, sklenice čisté. O čem si pokecáme teď?",
           timestamp: new Date().toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" }),
         },
-      ]);
+      ];
+      setMessages(cleared);
+      try {
+        sessionStorage.setItem("hospodsky_kecal_chat_history", JSON.stringify(cleared));
+      } catch (e) {
+        console.error(e);
+      }
       setError("");
     }
   };

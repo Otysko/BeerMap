@@ -23,6 +23,16 @@ interface PubDetailsProps {
   onSimulateLocation: (lat: number, lng: number) => void;
 }
 
+const FUNNY_FAR_AWAY_MESSAGES = [
+  "Hele, ty pivaři! Takhle na dálku to pivo nevypiješ. Hrdlo ti uschne! Doraz blíž než na 200 metrů, ať ti můžeme ten půllitr zapsat! 🍻",
+  "Pěkný pokus, kamaráde. Ale z gauče nebo šaliny se pivo nepije, to by ti zvětralo! Zvedni se a doklusej přímo k pípě. 🏃‍♂️💨",
+  "Zkoušíš pít telepaticky? To bohužel naše čidla neberou. Zvedni kotvy, udělej pár kroků k výčepu a zkus to znovu v okruhu 200 metrů! 📡🍺",
+  "Takhle daleko od pípy by ti spadla pěna dřív, než bys ten půllitr donesl k ústům! Popojdi o kus blíž a dej si jedno orošené naživo. 🧼🍺",
+  "Pozor, hrozí riziko dehydratace na dálku! Naše satelity tě vidí moc daleko od pípy. Doraz do knajpy, posaď se a ukaž, co v tobě je! 🛰️",
+  "Čepované pivo přes Wi-Fi ještě nikdo nevymyslel (pracujeme na tom). Dojdi si pro něj poctivě na bar! 💻❌🍺",
+  "Kamaráde, k tomuhle stolu ti z té dálky nedočepují. Přijď blíž a dej si u výčepu zapsat čerstvou hladinku!"
+];
+
 export default function PubDetails({
   pub,
   onClose,
@@ -419,7 +429,8 @@ export default function PubDetails({
                         const distKm = userLocation ? calculateDistanceInKm(userLocation.lat, userLocation.lng, pub.lat, pub.lng) : null;
                         const distM = distKm !== null ? Math.round(distKm * 1000) : null;
                         if (distM === null || distM > 200) {
-                          alert(`Tento kousek si můžeš zapsat jen přímo v hospodě (do 200 m). Aktuálně jsi ve vzdálenosti: ${distM !== null ? `${distM} m` : "neznámé"}. Přijď blíž a dej si jedno točené! 🍻`);
+                          const randomMsg = FUNNY_FAR_AWAY_MESSAGES[Math.floor(Math.random() * FUNNY_FAR_AWAY_MESSAGES.length)];
+                          alert(`${randomMsg}\n\n(Aktuální vzdálenost: ${distM !== null ? `${distM} m` : "neznámá (máš povolenou GPS?)"})`);
                           return;
                         }
                         setIsLoggingVisit(true);
@@ -433,7 +444,7 @@ export default function PubDetails({
                       }}
                       className="p-1 px-2.5 text-[11px] text-amber-500 hover:text-slate-950 hover:bg-amber-500 rounded-lg transition mr-auto flex items-center gap-1 cursor-pointer font-bold border border-amber-500/30 disabled:opacity-50"
                     >
-                      <BeerIcon className="w-3.5 h-3.5" /> Vypil jsem 🍺
+                      <BeerIcon className="w-3.5 h-3.5" /> Vypil jsem
                     </button>
                   )}
                   <button

@@ -356,18 +356,32 @@ export default function App() {
     };
 
     init();
+  }, []);
 
-    // Acquire user location for contextual AI references
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
+  // Continuously watch and update user location automatically as they walk
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
         setUserLocation({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude
         });
-      }, (err) => {
-        console.log("No location acquired for coordinates fallback.", err);
-      });
-    }
+      },
+      (err) => {
+        console.log("Automatic position tracking updated/failed:", err);
+      },
+      {
+        enableHighAccuracy: false, // Turn off high精度 to prevent slow lock times and battery drain
+        maximumAge: 30000,         // Cache can be up to 30 seconds old for instant performance
+        timeout: 10000,            // Timeout threshold
+      }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   // 2. Add a new Pub (Hospoda)
@@ -527,7 +541,7 @@ export default function App() {
           (err) => {
             alert("Přístup k poloze byl odmítnut nebo se její zaměření nezdařilo. Pro řazení podle vzdálenosti prosím povolte přístup k GPS v nastavení.");
           },
-          { enableHighAccuracy: true, timeout: 6000, maximumAge: 10000 }
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
         );
       } else {
         alert("Váš prohlížeč nepodporuje geolokační služby.");
