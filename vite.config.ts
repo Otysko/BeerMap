@@ -17,6 +17,9 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      allowedHosts: [
+        'pivni-mapa-david-g4dphbb7f0e6grbp.germanywestcentral-01.azurewebsites.net'
+      ],
     },
   };
 });
