@@ -41,6 +41,7 @@ export default function MapComponent({
   const candidateMarkerRef = useRef<any>(null);
   const userLocationMarkerRef = useRef<any>(null);
   const selectedPubIdRef = useRef<string | null>(selectedPubId);
+  const pubsRef = useRef<Pub[]>(pubs);
   const [mapBounds, setMapBounds] = useState<any>(null);
 
   const onBoundsChangeRef = useRef(onBoundsChange);
@@ -48,10 +49,14 @@ export default function MapComponent({
     onBoundsChangeRef.current = onBoundsChange;
   }, [onBoundsChange]);
 
-  // Keep ref in sync for event listeners
+  // Keep refs in sync for event listeners
   useEffect(() => {
     selectedPubIdRef.current = selectedPubId;
   }, [selectedPubId]);
+
+  useEffect(() => {
+    pubsRef.current = pubs;
+  }, [pubs]);
 
   // Search address input state
   const [searchQuery, setSearchQuery] = useState("");
@@ -324,7 +329,7 @@ export default function MapComponent({
   // 3. Pan map when selectedPub edits
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPubId) return;
-    const pub = pubs.find((p) => p.id === selectedPubId);
+    const pub = pubsRef.current.find((p) => p.id === selectedPubId);
     if (pub) {
       // First immediate pan to give instant response
       mapInstanceRef.current.setView([pub.lat, pub.lng], 15, { animate: true, duration: 0.4 });
@@ -339,7 +344,7 @@ export default function MapComponent({
 
       return () => clearTimeout(timer);
     }
-  }, [selectedPubId, pubs]);
+  }, [selectedPubId]);
 
   // 3b. Align centered map when sidebar collapses/opens
   useEffect(() => {
@@ -348,8 +353,8 @@ export default function MapComponent({
     
     const timer = setTimeout(() => {
       map.invalidateSize();
-      if (selectedPubId) {
-        const pub = pubs.find(p => p.id === selectedPubId);
+      if (selectedPubIdRef.current) {
+        const pub = pubsRef.current.find(p => p.id === selectedPubIdRef.current);
         if (pub) {
           map.panTo([pub.lat, pub.lng], { animate: true, duration: 0.4 });
         }
