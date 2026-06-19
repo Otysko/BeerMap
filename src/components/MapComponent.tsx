@@ -5,7 +5,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Pub } from "../types";
-import { Search, Compass, MapPin, Plus, Check, ListFilter, Minus } from "lucide-react";
+import { Search, Compass, MapPin, Plus, Check, ListFilter, Minus, Heart, X } from "lucide-react";
 
 interface MapComponentProps {
   pubs: Pub[];
@@ -18,6 +18,7 @@ interface MapComponentProps {
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
   onBoundsChange?: (bounds: { swLat: number; swLng: number; neLat: number; neLng: number } | null) => void;
+  theme: "dark" | "light";
 }
 
 export default function MapComponent({
@@ -31,9 +32,11 @@ export default function MapComponent({
   isSidebarOpen,
   onToggleSidebar,
   onBoundsChange,
+  theme,
 }: MapComponentProps) {
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
   const markersRef = useRef<{ [key: string]: any }>({});
   const candidateMarkerRef = useRef<any>(null);
   const userLocationMarkerRef = useRef<any>(null);
@@ -60,6 +63,7 @@ export default function MapComponent({
   const [newPubAddress, setNewPubAddress] = useState("");
   const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showDonateModal, setShowDonateModal] = useState(false);
 
   const L = (window as any).L;
 
@@ -78,13 +82,18 @@ export default function MapComponent({
       tap: false // Disable legacy Leaflet mobile tap handler that causes ghost clicks and double taps on search or markers
     }).setView([startLat, startLng], startZoom);
 
-    // Dark styled map tiles (CartoDB Dark Matter / Mapbox similar)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    // Base url based on user theme
+    const tilesUrl = theme === "light"
+      ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+
+    const tileLayer = L.tileLayer(tilesUrl, {
       subdomains: "abcd",
       maxZoom: 20,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     }).addTo(map);
 
+    tileLayerRef.current = tileLayer;
     mapInstanceRef.current = map;
 
     // Set up ResizeObserver to dynamically update Leaflet sized tiles as container elements smoothly expand or narrow
@@ -204,6 +213,16 @@ export default function MapComponent({
       }
     };
   }, []);
+
+  // 1b. Switch map style when user switches between Light and Dark core theme
+  useEffect(() => {
+    if (tileLayerRef.current) {
+      const url = theme === "light"
+        ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+      tileLayerRef.current.setUrl(url);
+    }
+  }, [theme]);
 
   // 2. Sync Existing Pub Markers
   useEffect(() => {
@@ -575,7 +594,7 @@ export default function MapComponent({
             <Search className="w-5 h-5 text-amber-500 mr-2 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Hledat město, ulici nebo obec..."
+              placeholder="Hledat..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent w-full focus:outline-none text-sm placeholder:text-slate-400"
@@ -616,9 +635,9 @@ export default function MapComponent({
       <div id="beer-leaflet-map" ref={mapElementRef} className="w-full h-full" />
 
       {/* 🛠️ Bottom Left Map Controls (Zoom +, Zoom -, Locate) */}
-      <div className="absolute bottom-6 left-4 z-[1000] flex flex-col gap-2">
+      <div className="absolute bottom-6 left-4 z-[1000] flex flex-col items-start gap-2">
         {/* Zoom Stack */}
-        <div className="flex flex-col bg-slate-900/95 backdrop-blur-md border border-amber-500/30 rounded-xl overflow-hidden shadow-xl">
+        <div className="w-10 flex flex-col bg-slate-900/95 backdrop-blur-md border border-amber-500/30 rounded-xl overflow-hidden shadow-xl">
           <button
             type="button"
             onClick={() => {
@@ -645,15 +664,26 @@ export default function MapComponent({
           </button>
         </div>
 
-        {/* Locate Me Button directly below zoom buttons */}
-        <button
-          type="button"
-          onClick={handleCenterOnUser}
-          title="Moje poloha"
-          className="flex items-center justify-center w-10 h-10 bg-slate-900/95 backdrop-blur-md border border-amber-500/30 text-amber-500 hover:text-white hover:bg-amber-500 hover:border-amber-400 hover:text-slate-950 rounded-xl shadow-xl transition-all cursor-pointer"
-        >
-          <Compass className="w-5 h-5" />
-        </button>
+        {/* Locate Me and Donate Buttons in a horizontal row */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleCenterOnUser}
+            title="Moje poloha"
+            className="flex items-center justify-center w-10 h-10 bg-slate-900/95 backdrop-blur-md border border-amber-500/30 text-amber-500 hover:text-white hover:bg-amber-500 hover:border-amber-400 hover:text-slate-950 rounded-xl shadow-xl transition-all cursor-pointer"
+          >
+            <Compass className="w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowDonateModal(true)}
+            title="Podpořit vývojáře"
+            className="flex items-center justify-center w-10 h-10 bg-slate-900/95 backdrop-blur-md border border-amber-500/30 text-amber-500 hover:text-white hover:bg-amber-500 hover:border-amber-400 hover:text-slate-950 rounded-xl shadow-xl transition-all cursor-pointer"
+          >
+            <Heart className="w-5 h-5 fill-amber-500/20" />
+          </button>
+        </div>
       </div>
 
       {/* 🆕 Floating "Add Pub" Form when Candidate is Active */}
@@ -731,6 +761,57 @@ export default function MapComponent({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* 🧡 Floating / Backdrop Custom Donation Modal */}
+      {showDonateModal && (
+        <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm z-[1100] flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 shadow-2xl max-w-sm w-full space-y-4 animate-scaleIn relative">
+            <button 
+              onClick={() => setShowDonateModal(false)}
+              className="absolute top-3.5 right-3.5 p-1 bg-slate-800 hover:bg-slate-700 text-slate-350 hover:text-white rounded-lg transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 flex-shrink-0">
+                <Heart className="w-5 h-5 fill-amber-500/10 animate-pulse" />
+              </div>
+              <div className="overflow-hidden">
+                <h3 className="text-sm font-display font-bold text-slate-100 uppercase tracking-wide">Podpořit sládka</h3>
+                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block mt-0.5">Dobrovolný dar na provoz</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed font-sans">
+              Pivní pas i celou českou pivní mapu pro tebe tvořím dobrovolně ve svém volném čase. Pokud ti aplikace pomohla najít orosený půllitr nebo se ti líbí, můžeš mě podpořit jedním pivem! 😉
+            </p>
+            
+            <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 text-[10px] text-slate-450 leading-normal font-medium">
+              ⚠️ <strong>Upozornění:</strong> Jedná se o čistě dobrovolný dar. Za příspěvek nezískáte žádné výhody ani prémiové funkce. Pouze vřelý pocit a moji vděčnost.
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowDonateModal(false)}
+                className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition cursor-pointer"
+              >
+                Zpět
+              </button>
+              <a 
+                href="https://www.buymeacoffee.com/davidkuncar" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex-[2] flex items-center justify-center gap-1.5 py-1.5 bg-[#f58f00] hover:bg-[#ff9e15] text-black font-extrabold font-display rounded-xl text-xs transition-all shadow-md active:scale-95 text-center cursor-pointer"
+              >
+                <span>🍺</span>
+                <span>Pozvat mě na jedno</span>
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </div>

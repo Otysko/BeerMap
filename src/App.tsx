@@ -11,12 +11,23 @@ import AddBeerModal from "./components/AddBeerModal";
 import AiAssistant from "./components/AiAssistant";
 import { LoginModal } from "./components/LoginModal";
 import { BeerPassport } from "./components/BeerPassport";
-import { Beer as BeerIcon, Sparkles, MapPin, Search, ListFilter, SlidersHorizontal, Info, PlusCircle, ArrowUpDown, ChevronLeft, ChevronRight, RefreshCw, X, Award, LogOut, User } from "lucide-react";
+import { Beer as BeerIcon, Sparkles, MapPin, Search, ListFilter, SlidersHorizontal, Info, PlusCircle, ArrowUpDown, ChevronLeft, ChevronRight, RefreshCw, X, Award, LogOut, User, Sun, Moon } from "lucide-react";
 
 export default function App() {
   const [pubs, setPubs] = useState<Pub[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Appearance & Theme preference
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem("pivnimapa_theme") as "dark" | "light") || "dark";
+  });
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    localStorage.setItem("pivnimapa_theme", nextTheme);
+  };
 
   // Search & Filtering states
   const [textFilter, setTextFilter] = useState(() => {
@@ -552,7 +563,7 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col bg-slate-950 font-sans text-slate-100 overflow-hidden select-none">
+    <div className={`fixed inset-0 w-full h-[100dvh] flex flex-col bg-slate-950 font-sans text-slate-100 overflow-hidden select-none transition-colors duration-300 ${theme === "light" ? "light-theme" : ""}`}>
       
       {/* 🍺 TOP NAVIGATION BAR HEADER */}
       <header className="flex-shrink-0 bg-slate-900 border-b border-amber-500/30 px-6 py-3.5 flex items-center justify-between shadow-md">
@@ -572,6 +583,15 @@ export default function App() {
 
         {/* AI Bartender launcher + Mobile Sidebar launcher */}
         <div className="flex items-center gap-2.5">
+          {/* Theme switcher toggle button */}
+          <button
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Světlý režim" : "Tmavý režim"}
+            className="w-10 h-10 bg-slate-950 hover:bg-slate-850 border border-slate-800 hover:border-amber-500/35 rounded-xl flex items-center justify-center text-amber-550 hover:text-amber-450 transition cursor-pointer select-none"
+          >
+            {theme === "dark" ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-amber-500" />}
+          </button>
+
           {/* 🍺 PIVNÍ PAS USER ACCORDION */}
           {userProfile ? (
             <div className="flex items-center">
@@ -828,7 +848,7 @@ export default function App() {
           </div>
 
           {/* Quick Informational Tip on Pub additions */}
-          <div className="p-3.5 bg-slate-950 border-t border-amber-500/20 flex items-start gap-2">
+          <div className="p-3.5 bg-slate-950 border-t border-amber-500/10 flex items-start gap-2">
             <Info className="w-4 h-4 text-amber-500 flex-shrink-0" />
             <p className="text-[10px] text-slate-450 leading-relaxed">
               <strong>Tip sládka:</strong> Novou hospodu přidáte <strong>kliknutím přímo do mapy</strong>, zadáním názvu a uložením místa.
@@ -884,6 +904,7 @@ export default function App() {
               }
               setIsPassportOpen(false);
             }}
+            theme={theme}
           />
 
           {/* Floating 'Hospodský Kecal AI' Button floating in the bottom right corner of the map */}

@@ -854,9 +854,9 @@ export function BeerPassport({
 
       {/* Persistent logout footer */}
       <div className="px-6 py-4 bg-slate-950 border-t border-amber-500/10 flex justify-between items-center mt-auto">
-        <div className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
-          <ClipboardList className="w-3.5 h-3.5 text-amber-505" />
-          KRONIKA AKTIVNÍ
+        <div className="text-[10px] text-slate-500 font-bold flex items-center gap-1.5">
+          <Award className="w-3.5 h-3.5 text-amber-500" />
+          <span>PIVNÍ PAS</span>
         </div>
         <button
           onClick={onLogout}

@@ -110,7 +110,7 @@ export default function PubDetails({
     <div className="w-full h-full flex flex-col bg-slate-900 border-l border-amber-500/30 text-slate-100 shadow-2xl overflow-y-auto scrollbar-thin">
       
       {/* Pub Header Banner */}
-      <div className="relative px-6 py-5 bg-gradient-to-br from-amber-600/20 via-amber-750/5 to-slate-900 border-b border-amber-500/30">
+      <div className="relative px-6 py-5 bg-gradient-to-r from-amber-500/15 to-slate-900 border-b border-amber-500/20">
         <div className="flex justify-between items-start gap-2">
           {!isEditingPub ? (
             <div className="space-y-1">
