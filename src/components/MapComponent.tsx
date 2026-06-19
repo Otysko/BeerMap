@@ -5,7 +5,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Pub } from "../types";
-import { Search, Compass, MapPin, Plus, Check, ListFilter, Minus, Heart, X } from "lucide-react";
+import { Search, Compass, MapPin, Plus, Check, ListFilter, Minus, Heart, X, ClipboardList } from "lucide-react";
 
 interface MapComponentProps {
   pubs: Pub[];
@@ -19,6 +19,9 @@ interface MapComponentProps {
   onToggleSidebar: () => void;
   onBoundsChange?: (bounds: { swLat: number; swLng: number; neLat: number; neLng: number } | null) => void;
   theme: "dark" | "light";
+  isAdmin?: boolean;
+  unreadReportsCount?: number;
+  onOpenReports?: () => void;
 }
 
 export default function MapComponent({
@@ -33,6 +36,9 @@ export default function MapComponent({
   onToggleSidebar,
   onBoundsChange,
   theme,
+  isAdmin = false,
+  unreadReportsCount = 0,
+  onOpenReports,
 }: MapComponentProps) {
   const mapElementRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -688,6 +694,22 @@ export default function MapComponent({
           >
             <Heart className="w-5 h-5 fill-amber-500/20" />
           </button>
+
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={onOpenReports}
+              title="Administrace nahlášených chyb"
+              className="relative flex items-center justify-center w-10 h-10 bg-slate-900/95 backdrop-blur-md border border-red-500/30 text-red-500 hover:text-white hover:bg-red-600 hover:border-red-500 rounded-xl shadow-xl transition-all cursor-pointer"
+            >
+              <ClipboardList className="w-5 h-5" />
+              {unreadReportsCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white font-extrabold rounded-full text-[9px] w-5 h-5 flex items-center justify-center animate-bounce border border-slate-950 shadow">
+                  {unreadReportsCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 

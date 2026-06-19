@@ -10,6 +10,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import sql from "mssql";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -201,7 +202,10 @@ async function createSqlTablesIfNotExist() {
         lng FLOAT NOT NULL,
         address NVARCHAR(255),
         notes NVARCHAR(MAX),
-        updatedAt VARCHAR(50)
+        updatedAt VARCHAR(50),
+        createdAt VARCHAR(50),
+        createdBy NVARCHAR(100),
+        updatedBy NVARCHAR(100)
       )
     `);
     
@@ -217,9 +221,36 @@ async function createSqlTablesIfNotExist() {
         style NVARCHAR(100),
         brewery NVARCHAR(100),
         description NVARCHAR(MAX),
+        createdAt VARCHAR(50),
+        createdBy NVARCHAR(100),
+        updatedAt VARCHAR(50),
+        updatedBy NVARCHAR(100),
         FOREIGN KEY (pubId) REFERENCES pubs(id) ON DELETE CASCADE
       )
     `);
+
+    // Gracefully run ALTER TABLEs to inject columns if tables already exist
+    try {
+      await req.query("ALTER TABLE pubs ADD createdAt VARCHAR(50)");
+    } catch (e) {}
+    try {
+      await req.query("ALTER TABLE pubs ADD createdBy NVARCHAR(100)");
+    } catch (e) {}
+    try {
+      await req.query("ALTER TABLE pubs ADD updatedBy NVARCHAR(100)");
+    } catch (e) {}
+    try {
+      await req.query("ALTER TABLE beers ADD createdAt VARCHAR(50)");
+    } catch (e) {}
+    try {
+      await req.query("ALTER TABLE beers ADD createdBy NVARCHAR(100)");
+    } catch (e) {}
+    try {
+      await req.query("ALTER TABLE beers ADD updatedAt VARCHAR(50)");
+    } catch (e) {}
+    try {
+      await req.query("ALTER TABLE beers ADD updatedBy NVARCHAR(100)");
+    } catch (e) {}
     
     // 3. Create passports table
     await req.query(`
@@ -355,7 +386,11 @@ async function getPubsList(): Promise<any[]> {
             price: b.price,
             style: b.style,
             brewery: b.brewery,
-            description: b.description
+            description: b.description,
+            createdAt: b.createdAt,
+            createdBy: b.createdBy,
+            updatedAt: b.updatedAt,
+            updatedBy: b.updatedBy
           }))
       }));
     } catch (err) {
@@ -365,7 +400,7 @@ async function getPubsList(): Promise<any[]> {
   return readPubsFromDb();
 }
 
-async function createNewPub(name: string, lat: number, lng: number, address: string, notes: string): Promise<any> {
+async function createNewPub(name: string, lat: number, lng: number, address: string, notes: string, createdBy?: string): Promise<any> {
   const newPub = {
     id: `pub-${Date.now()}`,
     name,
@@ -374,7 +409,10 @@ async function createNewPub(name: string, lat: number, lng: number, address: str
     address: address || "",
     notes: notes || "",
     beers: [] as any[],
-    updatedAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    createdBy: createdBy || "Anonymní uživatel",
+    updatedAt: new Date().toISOString(),
+    updatedBy: createdBy || "Anonymní uživatel"
   };
 
   if (isSqlMode && mssqlPool) {
@@ -387,9 +425,12 @@ async function createNewPub(name: string, lat: number, lng: number, address: str
         .input("address", sql.NVarChar(255), newPub.address)
         .input("notes", sql.NVarChar(sql.MAX), newPub.notes)
         .input("updatedAt", sql.VarChar(50), newPub.updatedAt)
+        .input("createdAt", sql.VarChar(50), newPub.createdAt)
+        .input("createdBy", sql.NVarChar(100), newPub.createdBy)
+        .input("updatedBy", sql.NVarChar(100), newPub.updatedBy)
         .query(`
-          INSERT INTO pubs (id, name, lat, lng, address, notes, updatedAt)
-          VALUES (@id, @name, @lat, @lng, @address, @notes, @updatedAt)
+          INSERT INTO pubs (id, name, lat, lng, address, notes, updatedAt, createdAt, createdBy, updatedBy)
+          VALUES (@id, @name, @lat, @lng, @address, @notes, @updatedAt, @createdAt, @createdBy, @updatedBy)
         `);
       return newPub;
     } catch (err) {
@@ -403,7 +444,10 @@ async function createNewPub(name: string, lat: number, lng: number, address: str
   return newPub;
 }
 
-async function updateExistingPub(pubId: string, name?: string, lat?: number, lng?: number, address?: string, notes?: string): Promise<any> {
+async function updateExistingPub(pubId: string, name?: string, lat?: number, lng?: number, address?: string, notes?: string, updatedBy?: string): Promise<any> {
+  const finalUpdatedBy = updatedBy || "Anonymní uživatel";
+  const nowStr = new Date().toISOString();
+
   if (isSqlMode && mssqlPool) {
     try {
       const existingRes = await mssqlPool.request()
@@ -419,7 +463,10 @@ async function updateExistingPub(pubId: string, name?: string, lat?: number, lng
         address: address !== undefined ? address : existing.address,
         notes: notes !== undefined ? notes : existing.notes,
         beers: [] as any[],
-        updatedAt: new Date().toISOString()
+        createdAt: existing.createdAt || nowStr,
+        createdBy: existing.createdBy || "Anonymní uživatel",
+        updatedAt: nowStr,
+        updatedBy: finalUpdatedBy
       };
       await mssqlPool.request()
         .input("pubId", sql.VarChar(50), pubId)
@@ -429,9 +476,10 @@ async function updateExistingPub(pubId: string, name?: string, lat?: number, lng
         .input("address", sql.NVarChar(255), finalPub.address)
         .input("notes", sql.NVarChar(sql.MAX), finalPub.notes)
         .input("updatedAt", sql.VarChar(50), finalPub.updatedAt)
+        .input("updatedBy", sql.NVarChar(100), finalPub.updatedBy)
         .query(`
           UPDATE pubs 
-          SET name = @name, lat = @lat, lng = @lng, address = @address, notes = @notes, updatedAt = @updatedAt
+          SET name = @name, lat = @lat, lng = @lng, address = @address, notes = @notes, updatedAt = @updatedAt, updatedBy = @updatedBy
           WHERE id = @pubId
         `);
       
@@ -454,7 +502,10 @@ async function updateExistingPub(pubId: string, name?: string, lat?: number, lng
     lng: lng !== undefined ? lng : pubs[index].lng,
     address: address !== undefined ? address : pubs[index].address,
     notes: notes !== undefined ? notes : pubs[index].notes,
-    updatedAt: new Date().toISOString()
+    createdAt: pubs[index].createdAt || nowStr,
+    createdBy: pubs[index].createdBy || "Anonymní uživatel",
+    updatedAt: nowStr,
+    updatedBy: finalUpdatedBy
   };
 
   writePubsToDb(pubs);
@@ -481,23 +532,17 @@ async function deleteExistingPub(pubId: string): Promise<boolean> {
 }
 
 async function addOrUpdateBeer(pubId: string, beer: any): Promise<any> {
+  const beerCreator = beer.createdBy || beer.updatedBy || "Anonymní uživatel";
+  const beerUpdater = beer.updatedBy || beer.createdBy || "Anonymní uživatel";
+  const nowStr = new Date().toISOString();
+
   if (isSqlMode && mssqlPool) {
     try {
       const pubCheck = await mssqlPool.request().input("pubId", sql.VarChar(50), pubId).query("SELECT id FROM pubs WHERE id = @pubId");
       if (pubCheck.recordset.length === 0) return null;
 
       const beerId = beer.id || `beer-${Date.now()}`;
-      const finalBeer = {
-        id: beerId,
-        pubId,
-        name: beer.name,
-        degrees: beer.degrees || "12°",
-        price: Number(beer.price),
-        style: beer.style || "Světlý ležák",
-        brewery: beer.brewery || "Neznámý pivovar",
-        description: beer.description || ""
-      };
-
+      
       const checkRes = await mssqlPool.request()
         .input("beerId", sql.VarChar(50), beerId)
         .query("SELECT id FROM beers WHERE id = @beerId");
@@ -505,43 +550,61 @@ async function addOrUpdateBeer(pubId: string, beer: any): Promise<any> {
       if (checkRes.recordset.length > 0) {
         await mssqlPool.request()
           .input("beerId", sql.VarChar(50), beerId)
-          .input("name", sql.NVarChar(100), finalBeer.name)
-          .input("degrees", sql.NVarChar(20), finalBeer.degrees)
-          .input("price", sql.Float, finalBeer.price)
-          .input("style", sql.NVarChar(100), finalBeer.style)
-          .input("brewery", sql.NVarChar(100), finalBeer.brewery)
-          .input("description", sql.NVarChar(sql.MAX), finalBeer.description)
+          .input("name", sql.NVarChar(100), beer.name)
+          .input("degrees", sql.NVarChar(20), beer.degrees)
+          .input("price", sql.Float, Number(beer.price))
+          .input("style", sql.NVarChar(100), beer.style)
+          .input("brewery", sql.NVarChar(100), beer.brewery)
+          .input("description", sql.NVarChar(sql.MAX), beer.description)
+          .input("updatedAt", sql.VarChar(50), nowStr)
+          .input("updatedBy", sql.NVarChar(100), beerUpdater)
           .query(`
             UPDATE beers
-            SET name = @name, degrees = @degrees, price = @price, style = @style, brewery = @brewery, description = @description
+            SET name = @name, degrees = @degrees, price = @price, style = @style, brewery = @brewery, description = @description, updatedAt = @updatedAt, updatedBy = @updatedBy
             WHERE id = @beerId
           `);
       } else {
         await mssqlPool.request()
           .input("beerId", sql.VarChar(50), beerId)
           .input("pubId", sql.VarChar(50), pubId)
-          .input("name", sql.NVarChar(100), finalBeer.name)
-          .input("degrees", sql.NVarChar(20), finalBeer.degrees)
-          .input("price", sql.Float, finalBeer.price)
-          .input("style", sql.NVarChar(100), finalBeer.style)
-          .input("brewery", sql.NVarChar(100), finalBeer.brewery)
-          .input("description", sql.NVarChar(sql.MAX), finalBeer.description)
+          .input("name", sql.NVarChar(100), beer.name)
+          .input("degrees", sql.NVarChar(20), beer.degrees)
+          .input("price", sql.Float, Number(beer.price))
+          .input("style", sql.NVarChar(100), beer.style)
+          .input("brewery", sql.NVarChar(100), beer.brewery)
+          .input("description", sql.NVarChar(sql.MAX), beer.description)
+          .input("createdAt", sql.VarChar(50), nowStr)
+          .input("createdBy", sql.NVarChar(100), beerCreator)
+          .input("updatedAt", sql.VarChar(50), nowStr)
+          .input("updatedBy", sql.NVarChar(100), beerCreator)
           .query(`
-            INSERT INTO beers (id, pubId, name, degrees, price, style, brewery, description)
-            VALUES (@beerId, @pubId, @name, @degrees, @price, @style, @brewery, @description)
+            INSERT INTO beers (id, pubId, name, degrees, price, style, brewery, description, createdAt, createdBy, updatedAt, updatedBy)
+            VALUES (@beerId, @pubId, @name, @degrees, @price, @style, @brewery, @description, @createdAt, @createdBy, @updatedAt, @updatedBy)
           `);
       }
 
       await mssqlPool.request()
         .input("pubId", sql.VarChar(50), pubId)
-        .input("updatedAt", sql.VarChar(50), new Date().toISOString())
+        .input("updatedAt", sql.VarChar(50), nowStr)
         .query("UPDATE pubs SET updatedAt = @updatedAt WHERE id = @pubId");
 
       const updatedPubRes = await mssqlPool.request().input("pubId", sql.VarChar(50), pubId).query("SELECT * FROM pubs WHERE id = @pubId");
       const beersRes = await mssqlPool.request().input("pubId", sql.VarChar(50), pubId).query("SELECT * FROM beers WHERE pubId = @pubId");
       return {
         ...updatedPubRes.recordset[0],
-        beers: beersRes.recordset
+        beers: beersRes.recordset.map((b: any) => ({
+          id: b.id,
+          name: b.name,
+          degrees: b.degrees,
+          price: b.price,
+          style: b.style,
+          brewery: b.brewery,
+          description: b.description,
+          createdAt: b.createdAt,
+          createdBy: b.createdBy,
+          updatedAt: b.updatedAt,
+          updatedBy: b.updatedBy
+        }))
       };
     } catch (err) {
       console.error("SQL addOrUpdateBeer failed, falling back to JSON:", err);
@@ -556,23 +619,41 @@ async function addOrUpdateBeer(pubId: string, beer: any): Promise<any> {
   const beerId = beer.id || `beer-${Date.now()}`;
   const existingBeerIndex = beer.id ? pub.beers.findIndex((b: any) => b.id === beer.id) : -1;
 
-  const finalBeer = {
-    id: beerId,
-    name: beer.name,
-    degrees: beer.degrees || "12°",
-    price: Number(beer.price),
-    style: beer.style || "Světlý ležák",
-    brewery: beer.brewery || "Neznámý pivovar",
-    description: beer.description || ""
-  };
-
+  let finalBeer;
   if (existingBeerIndex > -1) {
+    const orig = pub.beers[existingBeerIndex];
+    finalBeer = {
+      id: beerId,
+      name: beer.name,
+      degrees: beer.degrees || "12°",
+      price: Number(beer.price),
+      style: beer.style || "Světlý ležák",
+      brewery: beer.brewery || "Neznámý pivovar",
+      description: beer.description || "",
+      createdAt: orig.createdAt || nowStr,
+      createdBy: orig.createdBy || "Anonymní uživatel",
+      updatedAt: nowStr,
+      updatedBy: beerUpdater
+    };
     pub.beers[existingBeerIndex] = finalBeer;
   } else {
+    finalBeer = {
+      id: beerId,
+      name: beer.name,
+      degrees: beer.degrees || "12°",
+      price: Number(beer.price),
+      style: beer.style || "Světlý ležák",
+      brewery: beer.brewery || "Neznámý pivovar",
+      description: beer.description || "",
+      createdAt: nowStr,
+      createdBy: beerCreator,
+      updatedAt: nowStr,
+      updatedBy: beerCreator
+    };
     pub.beers.push(finalBeer);
   }
 
-  pub.updatedAt = new Date().toISOString();
+  pub.updatedAt = nowStr;
   writePubsToDb(pubs);
   return pub;
 }
@@ -975,22 +1056,22 @@ app.get("/api/pubs", async (req, res) => {
 
 // Create a new pub
 app.post("/api/pubs", async (req, res) => {
-  const { name, lat, lng, address, notes } = req.body;
+  const { name, lat, lng, address, notes, createdBy } = req.body;
   if (!name || typeof lat !== "number" || typeof lng !== "number") {
     res.status(400).json({ error: "Název hospody, zeměpisná šířka (lat) a délka (lng) jsou povinné údaje." });
     return;
   }
 
-  const newPub = await createNewPub(name, lat, lng, address, notes);
+  const newPub = await createNewPub(name, lat, lng, address, notes, createdBy);
   res.status(201).json(newPub);
 });
 
 // Update a pub (change name, coordinates, notes)
 app.put("/api/pubs/:pubId", async (req, res) => {
   const { pubId } = req.params;
-  const { name, lat, lng, address, notes } = req.body;
+  const { name, lat, lng, address, notes, updatedBy } = req.body;
 
-  const updated = await updateExistingPub(pubId, name, lat, lng, address, notes);
+  const updated = await updateExistingPub(pubId, name, lat, lng, address, notes, updatedBy);
   if (!updated) {
     res.status(404).json({ error: "Hospoda nebyla nalezena." });
     return;
@@ -1012,19 +1093,146 @@ app.delete("/api/pubs/:pubId", async (req, res) => {
 // Add a beer to a pub, or update an existing one
 app.post("/api/pubs/:pubId/beers", async (req, res) => {
   const { pubId } = req.params;
-  const { id, name, degrees, price, style, brewery, description } = req.body;
+  const { id, name, degrees, price, style, brewery, description, createdBy, updatedBy } = req.body;
 
   if (!name || price === undefined) {
     res.status(400).json({ error: "Název piva a cena za půllitr jsou povinné údaje." });
     return;
   }
 
-  const updatedPub = await addOrUpdateBeer(pubId, { id, name, degrees, price, style, brewery, description });
+  const updatedPub = await addOrUpdateBeer(pubId, { id, name, degrees, price, style, brewery, description, createdBy, updatedBy });
   if (!updatedPub) {
     res.status(404).json({ error: "Hospoda nebyla nalezena." });
     return;
   }
   res.json(updatedPub);
+});
+
+// Helper storage functions for Error Reports
+const REPORTS_DB_FILE = path.join(process.cwd(), "error_reports.json");
+
+function readReportsFromDb(): any[] {
+  try {
+    if (fs.existsSync(REPORTS_DB_FILE)) {
+      const data = fs.readFileSync(REPORTS_DB_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error("Error reading error_reports.json:", err);
+  }
+  return [];
+}
+
+function writeReportsToDb(reports: any[]) {
+  try {
+    fs.writeFileSync(REPORTS_DB_FILE, JSON.stringify(reports, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Error writing error_reports.json:", err);
+  }
+}
+
+async function sendEmailNotification(report: any) {
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const from = process.env.SMTP_FROM || '"Česká pivní mapa" <noreply@pivnimapa.cz>';
+  const to = process.env.SMTP_TO || "david.kuncar93@gmail.com";
+
+  if (!host || !user || !pass) {
+    console.log("SMTP configurations are not completely set. Skipping automatic email send on background progress.");
+    return;
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: host,
+      port: Number(port) || 587,
+      secure: Number(port) === 465,
+      auth: {
+        user: user,
+        pass: pass,
+      },
+    });
+
+    const mailOptions = {
+      from: from,
+      to: to,
+      subject: `🚨 NOVÉ HLÁŠENÍ CHYBY: ${report.pubName}`,
+      text: `Ahoj Davide,\n\nv aplikaci Česká pivní mapa bylo nahlášeno nové pochybení u hospody "${report.pubName}" (ID: ${report.pubId || "Neznámé"}).\n\nKategorie chyby:\n${report.category}\n\nDetailní popis:\n${report.description}\n\nNahlásil/a:\n${report.userName} (${report.userEmail})\n\nVytvořeno dne: ${new Date(report.createdAt).toLocaleString("cs-CZ")}\n\nZprávu si můžeš detailně prohlédnout, spravovat nebo označit za vyřešenou přímo ve svém administrátorském rozhraní v aplikaci.\n\nDej si jedno orosené! 🍻`,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Error report notification email sent successfully: %s", info.messageId);
+  } catch (error) {
+    console.error("Failed to send error report notification email:", error);
+  }
+}
+
+// Create an error report
+app.post("/api/reports", async (req, res) => {
+  const { pubId, pubName, category, description, userEmail, userName } = req.body;
+  if (!category || !description) {
+    res.status(400).json({ error: "Kategorie a popis nahlášené chyby jsou povinné údaje." });
+    return;
+  }
+
+  const newReport = {
+    id: `report-${Date.now()}`,
+    pubId: pubId || null,
+    pubName: pubName || "Neznámá hospoda",
+    category,
+    description,
+    userEmail: userEmail || "Anonymní",
+    userName: userName || "Anonymní",
+    status: "Nové",
+    createdAt: new Date().toISOString()
+  };
+
+  const reports = readReportsFromDb();
+  reports.push(newReport);
+  writeReportsToDb(reports);
+
+  // Send email in background, don't block the HTTP response
+  sendEmailNotification(newReport).catch(err => {
+    console.error("Background notify email failed:", err);
+  });
+
+  res.status(201).json({ success: true, report: newReport });
+});
+
+// Get all error reports
+app.get("/api/reports", async (req, res) => {
+  const reports = readReportsFromDb();
+  res.json(reports);
+});
+
+// Update the status of an error report (resolved, etc.)
+app.put("/api/reports/:reportId", async (req, res) => {
+  const { reportId } = req.params;
+  const { status } = req.body;
+  const reports = readReportsFromDb();
+  const idx = reports.findIndex((r) => r.id === reportId);
+  if (idx !== -1) {
+    reports[idx].status = status || "Vyřešeno";
+    writeReportsToDb(reports);
+    res.json({ success: true, report: reports[idx] });
+  } else {
+    res.status(404).json({ error: "Hlášení nebylo nalezeno." });
+  }
+});
+
+// Delete an error report
+app.delete("/api/reports/:reportId", async (req, res) => {
+  const { reportId } = req.params;
+  const reports = readReportsFromDb();
+  const filtered = reports.filter((r) => r.id !== reportId);
+  if (reports.length > filtered.length) {
+    writeReportsToDb(filtered);
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: "Hlášení nebylo nalezeno." });
+  }
 });
 
 // Delete a beer from a pub

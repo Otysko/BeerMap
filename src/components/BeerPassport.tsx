@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   X, 
   User, 
@@ -27,7 +27,8 @@ import {
   CheckCircle2,
   BarChart3,
   Edit2,
-  Check
+  Check,
+  AlertTriangle
 } from "lucide-react";
 import { UserProfile, UserPassport } from "../types";
 import { getAchievements } from "../lib/achievements";
@@ -94,12 +95,17 @@ export function BeerPassport({
   onUpdateFavoriteBeer,
   onUpdateUserProfile
 }: BeerPassportProps) {
-  const [activeTab, setActiveTab] = useState<"achievements" | "places" | "stats" | "history">("achievements");
+  const [activeTab, setActiveTab] = useState<string>("achievements");
   const [favBeerInput, setFavBeerInput] = useState(passport.favoriteBeerName || "");
   const [isEditingFav, setIsEditingFav] = useState(false);
   const [isSavingFav, setIsSavingFav] = useState(false);
   const [deletingVisitId, setDeletingVisitId] = useState<string | null>(null);
-  
+
+  // States for error reports (Admin only)
+  const [reports, setReports] = useState<any[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [reportsError, setReportsError] = useState("");
+
   // Inline name editing states
   const [isEditingName, setIsEditingName] = useState(false);
   const [newNameInput, setNewNameInput] = useState(userProfile.name || "");
@@ -191,6 +197,63 @@ export function BeerPassport({
     totalHoursSum += new Date(v.timestamp).getHours();
   });
   const avgHourStr = passport.visits.length > 0 ? `${Math.round(totalHoursSum / passport.visits.length)}:00` : "-";
+
+  const fetchReports = async () => {
+    if (userProfile.email !== "david.kuncar@seznam.cz") return;
+    setLoadingReports(true);
+    setReportsError("");
+    try {
+      const res = await fetch("/api/reports");
+      if (!res.ok) throw new Error("Chyba při stahování hlášení");
+      const data = await res.json();
+      setReports(data);
+    } catch (err: any) {
+      console.error(err);
+      setReportsError("Nepovedlo se načíst seznam nahlášených chyb.");
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && userProfile.email === "david.kuncar@seznam.cz") {
+      fetchReports();
+    }
+  }, [isOpen, userProfile.email]);
+
+  const handleResolveReport = async (reportId: string, status: string = "Vyřešeno") => {
+    try {
+      const res = await fetch(`/api/reports/${reportId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error("Nelze aktualizovat hlášení.");
+      
+      // Update local state
+      setReports((prev) =>
+        prev.map((r) => (r.id === reportId ? { ...r, status } : r))
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Chyba při označování hlášení.");
+    }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    try {
+      const res = await fetch(`/api/reports/${reportId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("Nelze smazat hlášení.");
+      
+      // Update local state
+      setReports((prev) => prev.filter((r) => r.id !== reportId));
+    } catch (err) {
+      console.error(err);
+      alert("Chyba při mazání hlášení.");
+    }
+  };
 
   const handleSaveFavBeer = async () => {
     setIsSavingFav(true);

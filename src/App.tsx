@@ -11,6 +11,8 @@ import AddBeerModal from "./components/AddBeerModal";
 import AiAssistant from "./components/AiAssistant";
 import { LoginModal } from "./components/LoginModal";
 import { BeerPassport } from "./components/BeerPassport";
+import OnboardingModal from "./components/OnboardingModal";
+import AdminReportsModal from "./components/AdminReportsModal";
 import { Beer as BeerIcon, Sparkles, MapPin, Search, ListFilter, SlidersHorizontal, Info, PlusCircle, ArrowUpDown, ChevronLeft, ChevronRight, RefreshCw, X, Award, LogOut, User, Sun, Moon } from "lucide-react";
 
 export default function App() {
@@ -52,6 +54,8 @@ export default function App() {
   const [editingBeer, setEditingBeer] = useState<Beer | null>(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For mobile menu collapse (default closed as requested)
+  const [isLegendOpen, setIsLegendOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
   // Active user location for proximity queries in AI
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -61,6 +65,12 @@ export default function App() {
   const [passport, setPassport] = useState<UserPassport | null>(null);
   const [isPassportOpen, setIsPassportOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // States for error reports (Admin only)
+  const [reports, setReports] = useState<any[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [reportsError, setReportsError] = useState("");
+  const [isAdminReportsOpen, setIsAdminReportsOpen] = useState(false);
 
   // Helper to calculate distance in km using Haversine formula
   const calculateDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -343,6 +353,65 @@ export default function App() {
     setUserLocation({ lat, lng });
   };
 
+  const fetchReports = async () => {
+    if (!userProfile || userProfile.email !== "david.kuncar@seznam.cz") return;
+    setLoadingReports(true);
+    setReportsError("");
+    try {
+      const res = await fetch("/api/reports");
+      if (!res.ok) throw new Error("Chyba při stahování hlášení");
+      const data = await res.json();
+      setReports(data || []);
+    } catch (err: any) {
+      console.error(err);
+      setReportsError("Nepovedlo se načíst seznam nahlášených chyb.");
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  const handleResolveReport = async (reportId: string, status: string = "Vyřešeno") => {
+    try {
+      const res = await fetch(`/api/reports/${reportId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error("Nelze aktualizovat hlášení.");
+      
+      // Update local state
+      setReports((prev) =>
+        prev.map((r) => (r.id === reportId ? { ...r, status } : r))
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Chyba při označování hlášení.");
+    }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    try {
+      const res = await fetch(`/api/reports/${reportId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("Nelze smazat hlášení.");
+      
+      // Update local state
+      setReports((prev) => prev.filter((r) => r.id !== reportId));
+    } catch (err) {
+      console.error(err);
+      alert("Chyba při mazání hlášení.");
+    }
+  };
+
+  useEffect(() => {
+    if (userProfile?.email === "david.kuncar@seznam.cz") {
+      fetchReports();
+    } else {
+      setReports([]);
+    }
+  }, [userProfile?.email]);
+
   useEffect(() => {
     const init = async () => {
       const serverPubs = await fetchPubs();
@@ -395,13 +464,23 @@ export default function App() {
     };
   }, []);
 
+  // 1.5 Onboarding first-time visitor check
+  useEffect(() => {
+    const hasVisited = localStorage.getItem("hasVisitedCzechPivniMapa");
+    if (!hasVisited) {
+      setIsOnboardingOpen(true);
+      localStorage.setItem("hasVisitedCzechPivniMapa", "true");
+    }
+  }, []);
+
   // 2. Add a new Pub (Hospoda)
   const handleCreatePub = async (name: string, lat: number, lng: number, address?: string) => {
     try {
+      const creator = userProfile ? (userProfile.name || userProfile.email) : "Anonymní uživatel";
       const res = await fetch("/api/pubs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, lat, lng, address: address || "" }),
+        body: JSON.stringify({ name, lat, lng, address: address || "", createdBy: creator }),
       });
       if (!res.ok) throw new Error("Chyba při zakládání hospody.");
       const newPub = await res.json();
@@ -418,10 +497,11 @@ export default function App() {
   // 3. Update Pub Header attributes
   const handleUpdatePubDetails = async (pubId: string, updatedFields: Partial<Pub>) => {
     try {
+      const updater = userProfile ? (userProfile.name || userProfile.email) : "Anonymní uživatel";
       const res = await fetch(`/api/pubs/${pubId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedFields),
+        body: JSON.stringify({ ...updatedFields, updatedBy: updater }),
       });
       if (!res.ok) throw new Error("Chyba při ukládání detailů hospody.");
       const updatedPub = await res.json();
@@ -463,10 +543,15 @@ export default function App() {
     if (!selectedPubId) return;
 
     try {
+      const author = userProfile ? (userProfile.name || userProfile.email) : "Anonymní uživatel";
       const res = await fetch(`/api/pubs/${selectedPubId}/beers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(beerData),
+        body: JSON.stringify({
+          ...beerData,
+          createdBy: beerData.id ? undefined : author,
+          updatedBy: author
+        }),
       });
       if (!res.ok) throw new Error("Chyba při ukládání piva.");
       const updatedPub = await res.json();
@@ -847,12 +932,59 @@ export default function App() {
             )}
           </div>
 
-          {/* Quick Informational Tip on Pub additions */}
-          <div className="p-3.5 bg-slate-950 border-t border-amber-500/10 flex items-start gap-2">
-            <Info className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <p className="text-[10px] text-slate-450 leading-relaxed">
-              <strong>Tip sládka:</strong> Novou hospodu přidáte <strong>kliknutím přímo do mapy</strong>, zadáním názvu a uložením místa.
-            </p>
+          {/* Collapsible Map Legend "Jak číst mapu & Tip sládka" */}
+          <div className="border-t border-amber-500/10 bg-slate-950 flex flex-col">
+            <button
+              onClick={() => setIsLegendOpen(!isLegendOpen)}
+              className="w-full px-3.5 py-3 flex items-center justify-between text-left text-xs font-bold text-amber-500 hover:bg-slate-900 transition-colors cursor-pointer"
+            >
+              <span className="flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+                🗺️ Jak číst mapu & tipy
+              </span>
+              <span className="text-[10px] text-slate-500 font-semibold font-sans">
+                {isLegendOpen ? "▲ Skrýt" : "▼ Zobrazit legendu"}
+              </span>
+            </button>
+            
+            {isLegendOpen && (
+              <div className="px-4 pb-4 pt-1 space-y-2.5 text-[11px] text-slate-300 divide-y divide-slate-900 border-t border-slate-900 transition-all duration-300">
+                <div className="flex items-center gap-3 pt-1">
+                  <span className="text-sm">🍺</span>
+                  <span><strong>Ikona na mapě</strong> = hospoda</span>
+                </div>
+                <div className="flex items-center gap-3 pt-1.5">
+                  <span className="w-5 h-5 flex items-center justify-center bg-red-600 text-white rounded-md text-[10px] font-black leading-none flex-shrink-0 shadow-sm border border-white/10 select-none">3</span>
+                  <span><strong>Číslo v bublině</strong> = počet piv na čepu</span>
+                </div>
+                <div className="flex items-center gap-3 pt-1.5">
+                  <span className="text-sm">📍</span>
+                  <span><strong>Modrá tečka</strong> = tvoje poloha</span>
+                </div>
+                <div className="flex items-center gap-3 pt-1.5">
+                  <span className="text-sm">💛</span>
+                  <span><strong>Srdce</strong> = podpořit mapu</span>
+                </div>
+                <div className="flex items-center gap-3 pt-1.5">
+                  <span className="text-sm">🧭</span>
+                  <span><strong>Kompas</strong> = vrátit se na moji polohu</span>
+                </div>
+                <div className="flex items-start gap-2.5 pt-2 text-[10.5px] text-slate-400 font-sans leading-relaxed">
+                  <Info className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong>Tip sládka:</strong> Novou hospodu přidáte <strong>kliknutím přímo do mapy</strong>, zadáním názvu a uložením místa.
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <button
+                    onClick={() => setIsOnboardingOpen(true)}
+                    className="w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 hover:text-amber-400 text-[10.5px] font-bold rounded-xl border border-amber-500/20 hover:border-amber-500/35 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                    Chci znovu vidět průvodce 🍺
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </aside>
 
@@ -905,6 +1037,9 @@ export default function App() {
               setIsPassportOpen(false);
             }}
             theme={theme}
+            isAdmin={userProfile?.email === "david.kuncar@seznam.cz"}
+            unreadReportsCount={reports.filter((r) => r.status !== "Vyřešeno").length}
+            onOpenReports={() => setIsAdminReportsOpen(true)}
           />
 
           {/* Floating 'Hospodský Kecal AI' Button floating in the bottom right corner of the map */}
@@ -1020,6 +1155,28 @@ export default function App() {
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
+
+      {/* 🍺 FIRST-TIME ONBOARDING VISITOR MODAL PANEL */}
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+      />
+
+       {/* 📋 ADMIN EXCLUSIVE ERROR REPORTS MODAL COMPONENT WINDOW */}
+      {userProfile?.email === "david.kuncar@seznam.cz" && (
+        <AdminReportsModal
+          isOpen={isAdminReportsOpen}
+          onClose={() => setIsAdminReportsOpen(false)}
+          adminEmail={userProfile.email}
+          reports={reports}
+          loading={loadingReports}
+          error={reportsError}
+          onRefresh={fetchReports}
+          onResolve={handleResolveReport}
+          onDelete={handleDeleteReport}
+          onSelectPub={setSelectedPubId}
+        />
+      )}
 
     </div>
   );

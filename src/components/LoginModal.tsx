@@ -182,8 +182,8 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
       setErrorMsg("Zadejte prosím přístupové heslo.");
       return;
     }
-    if (trimmedPassword.length < 4) {
-      setErrorMsg("Heslo musí mít z bezpečnostních důvodů délku alespoň 4 znaky.");
+    if (trimmedPassword.length < 8) {
+      setErrorMsg("Heslo musí mít z bezpečnostních důvodů délku alespoň 8 znaků.");
       return;
     }
 
@@ -309,7 +309,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
                   <Lock className="w-3.5 h-3.5 text-amber-500/80" /> Bezpečnostní heslo
                 </label>
-                <span className="text-[9px] text-slate-500 font-semibold">(min. 4 znaky)</span>
+                <span className="text-[9px] text-slate-500 font-semibold">(min. 8 znaků)</span>
               </div>
               <input
                 type="password"

@@ -11,6 +11,10 @@ export interface Beer {
   style?: string;    // Style (e.g. Ležák, IPA, Neumann, Stout, Tmavé)
   brewery?: string;  // Brewery / Pivovar (e.g. Plzeňský Prazdroj, Bernard)
   description?: string; // Short notes
+  createdAt?: string;   // Date is added
+  createdBy?: string;   // Who added the beer
+  updatedAt?: string;   // Date of last update
+  updatedBy?: string;   // Who updated the beer
 }
 
 export interface Pub {
@@ -21,7 +25,10 @@ export interface Pub {
   address?: string;    // Decoded address or location custom notes
   notes?: string;      // Pub general notes
   beers: Beer[];       // List of beers currently on tap ("točí se")
+  createdAt?: string;  // Date pub is created
+  createdBy?: string;  // Who added the pub
   updatedAt?: string;  // Date updated
+  updatedBy?: string;  // Who updated the pub details
 }
 
 export interface BeerAutocompleteSuggestion {

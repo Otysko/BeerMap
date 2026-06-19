@@ -6,6 +6,7 @@
 import React, { useState } from "react";
 import { Pub, Beer, UserProfile } from "../types";
 import { Plus, Trash2, Edit3, X, MapPin, Beer as BeerIcon, Calendar, HardDrive, DollarSign, PenTool, Check, Award, Sparkles, Navigation, CheckCircle2, ShieldAlert } from "lucide-react";
+import ReportErrorModal from "./ReportErrorModal";
 
 interface PubDetailsProps {
   pub: Pub | null;
@@ -51,6 +52,7 @@ export default function PubDetails({
   const [isEditingPub, setIsEditingPub] = useState(false);
   const [editName, setEditName] = useState("");
   const [isLoggingVisit, setIsLoggingVisit] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // Helper to calculate distance in km using Haversine formula
   const calculateDistanceInKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -155,9 +157,33 @@ export default function PubDetails({
           </p>
         )}
 
+        {/* Pub Metadata Info */}
+        {!isEditingPub && (pub.createdBy || pub.createdAt) && (
+          <div className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1.5 text-[10.5px] text-slate-400 font-mono bg-slate-950/20 px-3 py-1.5 rounded-lg border border-slate-800/40">
+            {pub.createdBy && (
+              <span className="flex items-center gap-1">
+                <PenTool className="w-3 h-3 text-amber-500/80" />
+                Přidal: <strong className="text-slate-350">{pub.createdBy}</strong>
+              </span>
+            )}
+            {pub.createdAt && (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-amber-500/80" />
+                Vytvořeno: <strong className="text-slate-350">{new Date(pub.createdAt).toLocaleDateString("cs-CZ")}</strong>
+              </span>
+            )}
+            {pub.updatedBy && pub.updatedBy !== pub.createdBy && (
+              <span className="flex items-center gap-1">
+                <Edit3 className="w-3 h-3 text-amber-400/80" />
+                Upravil: <strong className="text-slate-350">{pub.updatedBy}</strong>
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Action Controls for Pub Header */}
         {!isEditingPub && (
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-4">
             <button
               onClick={handleStartEditPub}
               className="px-3 py-1.5 bg-slate-850 hover:bg-slate-800 text-slate-350 hover:text-amber-500 text-xs font-semibold rounded-xl border border-slate-800/80 transition-colors flex items-center gap-1 cursor-pointer"
@@ -165,32 +191,41 @@ export default function PubDetails({
               <Edit3 className="w-3.5 h-3.5" /> Upravit údaje
             </button>
 
-            {isDeletingConfirm ? (
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-red-400 font-bold">Opravdu smazat?</span>
+            <button
+              onClick={() => setIsReportModalOpen(true)}
+              className="px-3 py-1.5 bg-slate-850 hover:bg-slate-800 text-slate-350 hover:text-amber-500 text-xs font-semibold rounded-xl border border-slate-800/80 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-500" /> Nahlásit chybu
+            </button>
+
+            {userProfile?.email === "david.kuncar@seznam.cz" && (
+              isDeletingConfirm ? (
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <span className="text-[10px] text-red-400 font-bold">Opravdu smazat?</span>
+                  <button
+                    onClick={async () => {
+                      await onDeletePub(pub.id);
+                      setIsDeletingConfirm(false);
+                    }}
+                    className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition cursor-pointer"
+                  >
+                    Ano
+                  </button>
+                  <button
+                    onClick={() => setIsDeletingConfirm(false)}
+                    className="px-2 py-1 bg-slate-800 text-slate-300 text-xs rounded-lg hover:bg-slate-700 transition cursor-pointer"
+                  >
+                    Ne
+                  </button>
+                </div>
+              ) : (
                 <button
-                  onClick={async () => {
-                    await onDeletePub(pub.id);
-                    setIsDeletingConfirm(false);
-                  }}
-                  className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition cursor-pointer"
+                  onClick={() => setIsDeletingConfirm(true)}
+                  className="px-3 py-1.5 bg-slate-850 hover:bg-red-950/40 text-slate-400 hover:text-red-400 text-xs font-semibold rounded-xl border border-slate-800/80 transition-colors flex items-center gap-1 ml-auto cursor-pointer"
                 >
-                  Ano
+                  <Trash2 className="w-3.5 h-3.5" /> Odstranit hospodu
                 </button>
-                <button
-                  onClick={() => setIsDeletingConfirm(false)}
-                  className="px-2 py-1 bg-slate-805 text-slate-300 text-xs rounded-lg hover:bg-slate-700 transition cursor-pointer"
-                >
-                  Ne
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsDeletingConfirm(true)}
-                className="px-3 py-1.5 bg-slate-850 hover:bg-red-950/40 text-slate-400 hover:text-red-400 text-xs font-semibold rounded-xl border border-slate-800/80 transition-colors flex items-center gap-1 ml-auto cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> Odstranit hospodu
-              </button>
+              )
             )}
           </div>
         )}
@@ -420,6 +455,29 @@ export default function PubDetails({
                   </p>
                 )}
 
+                {/* Beer Metadata Info */}
+                {(beer.createdBy || beer.createdAt) && (
+                  <div className="flex flex-wrap gap-x-2 text-[9.5px] text-slate-400 mt-2 font-mono items-center opacity-75">
+                    {beer.createdBy && (
+                      <span className="flex items-center gap-0.5">
+                        <PenTool className="w-2.5 h-2.5 text-amber-500/70" />
+                        Přidal: <strong className="text-slate-350">{beer.createdBy}</strong>
+                      </span>
+                    )}
+                    {beer.createdAt && (
+                      <span className="flex items-center gap-0.5 before:content-['•'] before:mr-1 before:text-slate-600">
+                        <Calendar className="w-2.5 h-2.5 text-amber-500/70" />
+                        {new Date(beer.createdAt).toLocaleDateString("cs-CZ")}
+                      </span>
+                    )}
+                    {beer.updatedBy && beer.updatedBy !== beer.createdBy && (
+                      <span className="flex items-center gap-0.5 before:content-['•'] before:mr-1 before:text-slate-600">
+                        Upravil: <strong className="text-slate-500">{beer.updatedBy}</strong>
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Edit & Delete hover Controls */}
                 <div className="flex gap-2 justify-end mt-3 pt-2 border-t border-amber-500/15">
                   {userProfile && (
@@ -501,6 +559,13 @@ export default function PubDetails({
           </span>
         </div>
       </div>
+
+      <ReportErrorModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        pub={pub}
+        userProfile={userProfile}
+      />
 
     </div>
   );
