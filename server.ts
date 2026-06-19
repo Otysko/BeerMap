@@ -1145,13 +1145,18 @@ async function sendEmailNotification(report: any) {
   }
 
   try {
+    const isSecure = process.env.SMTP_SECURE === "true" || (process.env.SMTP_SECURE !== "false" && Number(port) === 465);
+
     const transporter = nodemailer.createTransport({
       host: host,
       port: Number(port) || 587,
-      secure: Number(port) === 465,
+      secure: isSecure,
       auth: {
         user: user,
         pass: pass,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
