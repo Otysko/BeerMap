@@ -779,6 +779,28 @@ async function saveProfileName(email: string, name: string): Promise<boolean> {
   return true;
 }
 
+async function changePassportPassword(email: string, newPasswordHex: string): Promise<boolean> {
+  const emailLower = email.toLowerCase().trim();
+  const cleanPassword = (newPasswordHex || "").trim();
+  if (isSqlMode && mssqlPool) {
+    try {
+      const res = await mssqlPool.request()
+        .input("email", sql.NVarChar(100), emailLower)
+        .input("password", sql.NVarChar(100), cleanPassword)
+        .query("UPDATE passports SET password = @password WHERE email = @email");
+      return (res.rowsAffected[0] || 0) > 0;
+    } catch (err) {
+      console.error("SQL changePassportPassword failed, falling back to JSON:", err);
+    }
+  }
+
+  const dbPassports = readPassportsFromDb();
+  if (!dbPassports[emailLower]) return false;
+  dbPassports[emailLower].password = cleanPassword;
+  writePassportsToDb(dbPassports);
+  return true;
+}
+
 async function logBeerVisit(email: string, body: any): Promise<any> {
   const emailLower = email.toLowerCase().trim();
   const { pubId, pubName, beerId, beerName, degrees, style, brewery } = body;
@@ -1415,6 +1437,66 @@ app.post("/api/passports/:email/profile", async (req, res) => {
   res.json({
     success: true,
     name: name.trim()
+  });
+});
+
+// Update password for passport
+app.post("/api/passports/:email/password", async (req, res) => {
+  const { email } = req.params;
+  const { currentPassword, newPassword } = req.body;
+  
+  if (!email || !currentPassword || !newPassword) {
+    res.status(400).json({ error: "E-mail, současné heslo a nové heslo jsou povinné údaje." });
+    return;
+  }
+  
+  const authorized = await authorizePassportAsync(req, email);
+  if (!authorized) {
+    res.status(401).json({ error: "Neautorizovaný přístup. Nesprávné autorizační údaje." });
+    return;
+  }
+
+  // Explicit check: retrieve stored password and ensure currentPassword matches it exactly
+  const emailLower = email.toLowerCase().trim();
+  let dbPassword = "";
+  if (isSqlMode && mssqlPool) {
+    try {
+      const resDb = await mssqlPool.request()
+        .input("email", sql.NVarChar(100), emailLower)
+        .query("SELECT password FROM passports WHERE email = @email");
+      if (resDb.recordset.length > 0) {
+        dbPassword = resDb.recordset[0].password || "";
+      }
+    } catch (err) {
+      console.error("SQL database error while fetching password during update:", err);
+    }
+  } else {
+    const dbPassports = readPassportsFromDb();
+    const passport = dbPassports[emailLower];
+    if (passport) {
+      dbPassword = passport.password || "";
+    }
+  }
+
+  if (dbPassword && dbPassword.trim() !== currentPassword.trim()) {
+    res.status(400).json({ error: "Zadané současné heslo není správné." });
+    return;
+  }
+
+  if (newPassword.trim().length < 8) {
+    res.status(400).json({ error: "Nové heslo musí mít alespoň 8 znaků." });
+    return;
+  }
+  
+  const saved = await changePassportPassword(email, newPassword.trim());
+  if (!saved) {
+    res.status(404).json({ error: "Pivní pas nebyl nalezen." });
+    return;
+  }
+  
+  res.json({
+    success: true,
+    message: "Heslo bylo úspěšně změněno."
   });
 });
 

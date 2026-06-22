@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Mail, User, Lock, ShieldAlert, Sparkles } from "lucide-react";
+import { X, Mail, User, Lock, ShieldAlert, Sparkles, Eye, EyeOff } from "lucide-react";
 import { UserProfile } from "../types";
 
 interface LoginModalProps {
@@ -15,9 +15,20 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const [errorMsg, setErrorMsg] = useState("");
   const [isGisLoaded, setIsGisLoaded] = useState(false);
   const [hasGoogleCredentials, setHasGoogleCredentials] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // References to isolate Google's dynamic DOM additions from React's Virtual DOM eyes
   const googleBtnParentRef = useRef<HTMLDivElement>(null);
+
+  // Reset modal input states whenever the modal is opened or closed
+  useEffect(() => {
+    if (!isOpen) {
+      setEmailInput("");
+      setPasswordInput("");
+      setErrorMsg("");
+      setShowPassword(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     let client_id = "";
@@ -311,14 +322,23 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                 </label>
                 <span className="text-[9px] text-slate-500 font-semibold">(min. 8 znaků)</span>
               </div>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer select-none p-0.5"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
               <p className="text-[9px] text-slate-450 leading-tight">
                 Pokud vytváříte nový pas, heslo si zvolte. Pokud se vracíte ke svému již založenému pasu, zadejte své heslo.
               </p>

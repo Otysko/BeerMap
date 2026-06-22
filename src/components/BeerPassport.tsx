@@ -28,7 +28,10 @@ import {
   BarChart3,
   Edit2,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { UserProfile, UserPassport } from "../types";
 import { getAchievements } from "../lib/achievements";
@@ -42,6 +45,7 @@ interface BeerPassportProps {
   onDeleteVisit: (visitId: string) => Promise<void>;
   onUpdateFavoriteBeer: (beerName: string) => Promise<void>;
   onUpdateUserProfile?: (updated: UserProfile) => void;
+  onChangePassword?: (currentPassword: string, newPassword: string) => Promise<boolean>;
 }
 
 // Icon resolver for achievements map
@@ -93,7 +97,8 @@ export function BeerPassport({
   onLogout, 
   onDeleteVisit, 
   onUpdateFavoriteBeer,
-  onUpdateUserProfile
+  onUpdateUserProfile,
+  onChangePassword
 }: BeerPassportProps) {
   const [activeTab, setActiveTab] = useState<string>("achievements");
   const [favBeerInput, setFavBeerInput] = useState(passport.favoriteBeerName || "");
@@ -109,6 +114,38 @@ export function BeerPassport({
   // Inline name editing states
   const [isEditingName, setIsEditingName] = useState(false);
   const [newNameInput, setNewNameInput] = useState(userProfile.name || "");
+
+  // Password change states
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onChangePassword) return;
+    if (newPassword.trim().length < 8) {
+      alert("Nové heslo musí mít alespoň 8 znaků.");
+      return;
+    }
+    setIsSavingPassword(true);
+    try {
+      const success = await onChangePassword(oldPassword, newPassword);
+      if (success) {
+        setIsChangingPassword(false);
+        setOldPassword("");
+        setNewPassword("");
+        setShowOldPassword(false);
+        setShowNewPassword(false);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
   
   // Pagination limits for long lists
   const [placesLimit, setPlacesLimit] = useState(15);
@@ -340,15 +377,100 @@ export function BeerPassport({
                 {userProfile.email}
               </p>
               
-              <div className="flex items-center gap-1.5 mt-2">
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                 <button
+                  type="button"
                   onClick={onLogout}
                   className="flex items-center gap-1 text-[9.5px] font-bold text-red-400 hover:text-red-500 hover:bg-red-500/15 border border-red-500/15 hover:border-red-500/30 bg-red-500/5 px-2.5 py-1 rounded-md transition cursor-pointer select-none"
                 >
                   <LogOut className="w-2.5 h-2.5" />
                   Odhlásit se
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setIsChangingPassword(true)}
+                  className="flex items-center gap-1 text-[9.5px] font-bold text-slate-300 hover:text-slate-100 hover:bg-slate-800 border border-slate-800 px-2.5 py-1 rounded-md transition cursor-pointer select-none"
+                >
+                  <Lock className="w-2.5 h-2.5 text-slate-400" />
+                  Změnit heslo
+                </button>
               </div>
+
+              {isChangingPassword && (
+                <form onSubmit={handlePasswordSubmit} className="mt-3 p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-2.5 w-64 md:w-72">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black tracking-wider text-amber-500 uppercase flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5" /> Změna hesla
+                    </span>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setIsChangingPassword(false);
+                        setOldPassword("");
+                        setNewPassword("");
+                        setShowOldPassword(false);
+                        setShowNewPassword(false);
+                      }}
+                      className="text-[10px] text-slate-500 hover:text-slate-350 font-bold"
+                    >
+                      Zrušit
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-bold uppercase block">Současné heslo</label>
+                    <div className="relative">
+                      <input
+                        type={showOldPassword ? "text" : "password"}
+                        required
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 focus:border-amber-500/50 rounded-lg pl-2 pr-8 py-1 text-xs text-slate-100 outline-none transition"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword(!showOldPassword)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer select-none p-0.5"
+                      >
+                        {showOldPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[9px] text-slate-500 font-bold uppercase block">Nové heslo</label>
+                      <span className="text-[8px] text-slate-500 font-semibold">(min. 8 znaků)</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 focus:border-amber-500/50 rounded-lg pl-2 pr-8 py-1 text-xs text-slate-100 outline-none transition"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer select-none p-0.5"
+                      >
+                        {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSavingPassword || newPassword.length < 8}
+                    className="w-full py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-[10px] font-bold rounded-lg transition disabled:opacity-50"
+                  >
+                    {isSavingPassword ? "Ukládání..." : "Uložit nové heslo"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
@@ -916,18 +1038,34 @@ export function BeerPassport({
       </div>
 
       {/* Persistent logout footer */}
-      <div className="px-6 py-4 bg-slate-950 border-t border-amber-500/10 flex justify-between items-center mt-auto">
+      <div className="px-6 py-4 bg-slate-950 border-t border-amber-500/10 flex justify-between items-center mt-auto gap-2 flex-wrap sm:flex-nowrap">
         <div className="text-[10px] text-slate-500 font-bold flex items-center gap-1.5">
           <Award className="w-3.5 h-3.5 text-amber-500" />
           <span>PIVNÍ PAS</span>
         </div>
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-amber-500/20 hover:border-amber-500/50 hover:bg-red-950/20 hover:text-red-400 rounded-xl text-[11px] font-bold text-slate-400 transition cursor-pointer"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          Odhlásit se
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setIsChangingPassword(true);
+              const container = document.querySelector(".scrollbar-thin");
+              if (container) {
+                container.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800 rounded-xl text-[11px] font-bold text-slate-300 transition cursor-pointer select-none"
+          >
+            <Lock className="w-3.5 h-3.5 text-slate-400" />
+            Změnit heslo
+          </button>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-amber-500/20 hover:border-amber-500/50 hover:bg-red-950/20 hover:text-red-400 rounded-xl text-[11px] font-bold text-slate-400 transition cursor-pointer select-none"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Odhlásit se
+          </button>
+        </div>
       </div>
 
     </div>

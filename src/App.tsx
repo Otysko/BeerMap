@@ -157,12 +157,7 @@ export default function App() {
     return null;
   };
 
-  // Keep local backups up to date whenever pubs or passport updates
-  useEffect(() => {
-    if (pubs && pubs.length > 0) {
-      localStorage.setItem("pivnimapa_pubs", JSON.stringify(pubs));
-    }
-  }, [pubs]);
+  // Keep local backups up to date whenever passport updates
 
   useEffect(() => {
     if (passport && userProfile?.email) {
@@ -179,70 +174,47 @@ export default function App() {
     localStorage.setItem("pivnimapa_filter_maxprice", String(maxPriceFilter));
   }, [maxPriceFilter]);
 
-  // Check and restore data from localStorage if Render server wiped filesystem
-  const checkAndRestoreData = async (serverPubs: Pub[], email?: string, serverPassport?: any) => {
-    let pubsToSync: Pub[] | null = null;
-    let passportsToSync: Record<string, any> | null = null;
-
-    // 1. Check if local pub backup has more pubs
+  // Update Profile Name or Portrait
+  const handleUpdateUserProfile = async (updated: UserProfile) => {
+    if (!userProfile) return;
     try {
-      const localPubsStr = localStorage.getItem("pivnimapa_pubs");
-      if (localPubsStr) {
-        const localPubs = JSON.parse(localPubsStr) as Pub[];
-        if (Array.isArray(localPubs) && localPubs.length > serverPubs.length) {
-          pubsToSync = localPubs;
-        }
-      }
-    } catch (e) {
-      console.warn("Error reading local pub backup:", e);
-    }
-
-    // 2. Check if local passport has visits whereas server returned a fresh empty/fewer visits passport
-    if (email) {
-      try {
-        const lowerEmail = email.toLowerCase().trim();
-        const localPassportStr = localStorage.getItem("pivnimapa_passport_" + lowerEmail);
-        if (localPassportStr) {
-          const localPassport = JSON.parse(localPassportStr);
-          if (localPassport && Array.isArray(localPassport.visits) && localPassport.visits.length > 0) {
-            const serverVisitsCount = serverPassport && Array.isArray(serverPassport.visits) ? serverPassport.visits.length : 0;
-            if (localPassport.visits.length > serverVisitsCount) {
-              passportsToSync = {
-                [lowerEmail]: localPassport
-              };
-            }
-          }
-        }
-      } catch (e) {
-        console.warn("Error reading local passport backup:", e);
-      }
-    }
-
-    // 3. If any data needs syncing back, push to server!
-    if (pubsToSync || passportsToSync) {
-      console.log("[Sync] Disk wipe detected. Restoring from client's browser local storage...", {
-        pubsNum: pubsToSync?.length,
-        passportsNum: passportsToSync ? Object.keys(passportsToSync).length : 0
+      const res = await fetch(`/api/passports/${encodeURIComponent(updated.email)}/profile`, {
+        method: "POST",
+        headers: getPassportHeaders(),
+        body: JSON.stringify({ name: updated.name })
       });
-      try {
-        const res = await fetch("/api/sync-restore", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pubs: pubsToSync,
-            passports: passportsToSync
-          })
-        });
-        if (res.ok) {
-          console.log("[Sync] Data restored successfully!");
-          await fetchPubs();
-          if (email) {
-            await fetchPassportData(email);
-          }
-        }
-      } catch (e) {
-        console.error("[Sync] Error running sync restore:", e);
+      if (res.ok) {
+        setUserProfile(updated);
+        localStorage.setItem("pivnimapa_user", JSON.stringify(updated));
+        fetchPassportData(updated.email, updated.password);
       }
+    } catch (err) {
+      console.error("Failed to update user profile on backend:", err);
+    }
+  };
+
+  const handleChangePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    if (!userProfile) return false;
+    try {
+      const res = await fetch(`/api/passports/${encodeURIComponent(userProfile.email)}/password`, {
+        method: "POST",
+        headers: getPassportHeaders(),
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Při změně hesla došlo k chybě.");
+        return false;
+      }
+      const updatedProfile = { ...userProfile, password: newPassword.trim() };
+      setUserProfile(updatedProfile);
+      localStorage.setItem("pivnimapa_user", JSON.stringify(updatedProfile));
+      alert("Heslo bylo úspěšně změněno!");
+      return true;
+    } catch (err) {
+      console.error("Failed to change password:", err);
+      alert("Připojení k serveru selhalo.");
+      return false;
     }
   };
 
@@ -260,25 +232,6 @@ export default function App() {
     setPassport(null);
     setIsPassportOpen(false);
     localStorage.removeItem("pivnimapa_user");
-  };
-
-  // Handle Profile Update (e.g. name or portrait)
-  const handleUpdateUserProfile = async (updated: UserProfile) => {
-    if (!userProfile) return;
-    try {
-      const res = await fetch(`/api/passports/${encodeURIComponent(updated.email)}/profile`, {
-        method: "POST",
-        headers: getPassportHeaders(),
-        body: JSON.stringify({ name: updated.name })
-      });
-      if (res.ok) {
-        setUserProfile(updated);
-        localStorage.setItem("pivnimapa_user", JSON.stringify(updated));
-        fetchPassportData(updated.email, updated.password);
-      }
-    } catch (err) {
-      console.error("Failed to update user profile on backend:", err);
-    }
   };
 
   // Log a pub/beer visit to the Beer Passport
@@ -414,25 +367,20 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
-      const serverPubs = await fetchPubs();
+      await fetchPubs();
       
       const cachedUser = localStorage.getItem("pivnimapa_user");
-      let activeEmail: string | undefined;
-      let serverPassport: any = null;
       if (cachedUser) {
         try {
           const parsed = JSON.parse(cachedUser);
           if (parsed && parsed.email) {
             setUserProfile(parsed);
-            activeEmail = parsed.email;
-            serverPassport = await fetchPassportData(parsed.email);
+            await fetchPassportData(parsed.email);
           }
         } catch (err) {
           console.error("Failed to parse cached user:", err);
         }
       }
-
-      await checkAndRestoreData(serverPubs, activeEmail, serverPassport);
     };
 
     init();
@@ -1132,6 +1080,7 @@ export default function App() {
               onDeleteVisit={handleDeleteVisit}
               onUpdateFavoriteBeer={handleUpdateFavoriteBeer}
               onUpdateUserProfile={handleUpdateUserProfile}
+              onChangePassword={handleChangePassword}
             />
           )}
         </aside>
