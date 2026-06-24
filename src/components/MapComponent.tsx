@@ -496,9 +496,12 @@ export default function MapComponent({
     // Recalculate dimensions immediately before centering to ensure absolute precision
     mapInstanceRef.current.invalidateSize({ animate: false });
 
+    const currentZoom = mapInstanceRef.current.getZoom();
+    const targetZoom = Math.max(currentZoom || 15, 17);
+
     // 1. If we already have the tracked userLocation in state, fly to it immediately (speed-up)
     if (userLocation) {
-      mapInstanceRef.current.flyTo([userLocation.lat, userLocation.lng], 15, { duration: 1.5 });
+      mapInstanceRef.current.flyTo([userLocation.lat, userLocation.lng], targetZoom, { duration: 1.5 });
       
       const userIcon = L.divIcon({
         html: `<div class="w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-lg ring-4 ring-blue-500/30 animate-pulse"></div>`,
@@ -524,7 +527,9 @@ export default function MapComponent({
           const { latitude, longitude } = position.coords;
           if (mapInstanceRef.current) {
             mapInstanceRef.current.invalidateSize({ animate: false });
-            mapInstanceRef.current.flyTo([latitude, longitude], 15, { duration: 1.5 });
+            const currZoom = mapInstanceRef.current.getZoom();
+            const fallbackTargetZoom = Math.max(currZoom || 15, 17);
+            mapInstanceRef.current.flyTo([latitude, longitude], fallbackTargetZoom, { duration: 1.5 });
           }
           
           const userIcon = L.divIcon({

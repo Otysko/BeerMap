@@ -36,6 +36,8 @@ import {
 import { UserProfile, UserPassport } from "../types";
 import { getAchievements } from "../lib/achievements";
 
+const ADMIN_EMAIL = (import.meta as any).env?.VITE_ADMIN_EMAIL || "david.kuncar@seznam.cz";
+
 interface BeerPassportProps {
   isOpen: boolean;
   onClose: () => void;
@@ -236,7 +238,7 @@ export function BeerPassport({
   const avgHourStr = passport.visits.length > 0 ? `${Math.round(totalHoursSum / passport.visits.length)}:00` : "-";
 
   const fetchReports = async () => {
-    if (userProfile.email !== "david.kuncar@seznam.cz") return;
+    if (userProfile.email !== ADMIN_EMAIL) return;
     setLoadingReports(true);
     setReportsError("");
     try {
@@ -253,7 +255,7 @@ export function BeerPassport({
   };
 
   useEffect(() => {
-    if (isOpen && userProfile.email === "david.kuncar@seznam.cz") {
+    if (isOpen && userProfile.email === ADMIN_EMAIL) {
       fetchReports();
     }
   }, [isOpen, userProfile.email]);

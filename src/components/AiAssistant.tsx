@@ -175,7 +175,17 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Countdown timer for hospodsky kecal rate limit
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const timer = setInterval(() => {
+      setCooldownRemaining((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownRemaining]);
 
   // Dynamic favorite beer resolution
   const favBeer = favoriteBeerName?.trim() || "Plzeň";
@@ -230,7 +240,7 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
 
   const handleSendMessage = async (customText?: string) => {
     const textToSend = customText || input.trim();
-    if (!textToSend || loading) return;
+    if (!textToSend || loading || cooldownRemaining > 0) return;
 
     if (!customText) setInput("");
     setError("");
@@ -300,6 +310,7 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
       ]);
     } finally {
       setLoading(false);
+      setCooldownRemaining(10);
     }
   };
 
@@ -420,7 +431,7 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
             <button
               key={idx}
               onClick={() => handleSendMessage(q.text)}
-              disabled={loading}
+              disabled={loading || cooldownRemaining > 0}
               className="text-[11px] font-medium bg-slate-850 hover:bg-amber-500/20 hover:text-amber-300 disabled:bg-slate-900 disabled:text-slate-600 px-2.5 py-1 rounded-xl border border-slate-800 transition-colors cursor-pointer text-left"
             >
               {q.label}
@@ -442,13 +453,13 @@ export default function AiAssistant({ isOpen, onClose, userLatLng, favoriteBeerN
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Zeptej se na cokoliv o pivu a hospodách..."
-            disabled={loading}
-            className="flex-grow bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl px-4 py-2 text-sm text-slate-100"
+            placeholder={cooldownRemaining > 0 ? `Výčepní si dává lok... (počkej ${cooldownRemaining}s)` : "Zeptej se na cokoliv o pivu a hospodách..."}
+            disabled={loading || cooldownRemaining > 0}
+            className="flex-grow bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl px-4 py-2 text-sm text-slate-100 disabled:text-slate-500 disabled:border-slate-900"
           />
           <button
             type="submit"
-            disabled={loading || !input.trim()}
+            disabled={loading || cooldownRemaining > 0 || !input.trim()}
             className="flex items-center justify-center w-10 h-10 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 rounded-xl transition duration-200 cursor-pointer shadow-lg shadow-amber-500/10"
           >
             <Send className="w-4 h-4" />

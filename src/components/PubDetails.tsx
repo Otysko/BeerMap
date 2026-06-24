@@ -8,6 +8,8 @@ import { Pub, Beer, UserProfile } from "../types";
 import { Plus, Trash2, Edit3, X, MapPin, Beer as BeerIcon, Calendar, HardDrive, DollarSign, PenTool, Check, Award, Sparkles, Navigation, CheckCircle2, ShieldAlert } from "lucide-react";
 import ReportErrorModal from "./ReportErrorModal";
 
+const ADMIN_EMAIL = (import.meta as any).env?.VITE_ADMIN_EMAIL || "david.kuncar@seznam.cz";
+
 interface PubDetailsProps {
   pub: Pub | null;
   onClose: () => void;
@@ -25,9 +27,9 @@ interface PubDetailsProps {
 }
 
 const FUNNY_FAR_AWAY_MESSAGES = [
-  "Hele, ty pivaři! Takhle na dálku to pivo nevypiješ. Hrdlo ti uschne! Doraz blíž než na 200 metrů, ať ti můžeme ten půllitr zapsat! 🍻",
+  "Hele, ty pivaři! Takhle na dálku to pivo nevypiješ. Hrdlo ti uschne! Doraz blíž než na 50 metrů, ať ti můžeme ten půllitr zapsat! 🍻",
   "Pěkný pokus, kamaráde. Ale z gauče nebo šaliny se pivo nepije, to by ti zvětralo! Zvedni se a doklusej přímo k pípě. 🏃‍♂️💨",
-  "Zkoušíš pít telepaticky? To bohužel naše čidla neberou. Zvedni kotvy, udělej pár kroků k výčepu a zkus to znovu v okruhu 200 metrů! 📡🍺",
+  "Zkoušíš pít telepaticky? To bohužel naše čidla neberou. Zvedni kotvy, udělej pár kroků k výčepu a zkus to znovu v okruhu 50 metrů! 📡🍺",
   "Takhle daleko od pípy by ti spadla pěna dřív, než bys ten půllitr donesl k ústům! Popojdi o kus blíž a dej si jedno orošené naživo. 🧼🍺",
   "Pozor, hrozí riziko dehydratace na dálku! Naše satelity tě vidí moc daleko od pípy. Doraz do knajpy, posaď se a ukaž, co v tobě je! 🛰️",
   "Čepované pivo přes Wi-Fi ještě nikdo nevymyslel (pracujeme na tom). Dojdi si pro něj poctivě na bar! 💻❌🍺",
@@ -198,7 +200,7 @@ export default function PubDetails({
               <ShieldAlert className="w-3.5 h-3.5 text-amber-500" /> Nahlásit chybu
             </button>
 
-            {userProfile?.email === "david.kuncar@seznam.cz" && (
+            {userProfile?.email === ADMIN_EMAIL && (
               isDeletingConfirm ? (
                 <div className="flex items-center gap-1.5 ml-auto">
                   <span className="text-[10px] text-red-400 font-bold">Opravdu smazat?</span>
@@ -260,7 +262,7 @@ export default function PubDetails({
               // Case 2: User logged in. Calculate distance
               const distKm = userLocation ? calculateDistanceInKm(userLocation.lat, userLocation.lng, pub.lat, pub.lng) : null;
               const distM = distKm !== null ? Math.round(distKm * 1000) : null;
-              const isNearby = distM !== null && distM <= 200;
+              const isNearby = distM !== null && distM <= 50;
 
               if (!isNearby) {
                 return (
@@ -274,7 +276,7 @@ export default function PubDetails({
                           Příliš daleko pro zápis
                         </h4>
                         <p className="text-[10px] text-slate-400 leading-normal">
-                          Zapisovat piva lze jen v dosahu do 200 m (z domova to nejde!). Aktuální vzdálenost:{" "}
+                          Zapisovat piva lze jen v dosahu do 50 m (z domova to nejde!). Aktuální vzdálenost:{" "}
                           <span className="font-bold text-red-400">
                             {distM !== null ? `${distM} m` : "neznámá (zapni GPS)"}
                           </span>.
@@ -285,7 +287,7 @@ export default function PubDetails({
                 );
               }
 
-              // Case 3: User logged in AND nearby (within 200m)
+              // Case 3: User logged in AND nearby (within 50m)
               return (
                 <div className="bg-slate-950/70 p-3.5 border border-emerald-500/20 rounded-2xl space-y-3 animate-fadeIn">
                   <div className="flex items-start gap-3">
@@ -486,7 +488,7 @@ export default function PubDetails({
                       onClick={async () => {
                         const distKm = userLocation ? calculateDistanceInKm(userLocation.lat, userLocation.lng, pub.lat, pub.lng) : null;
                         const distM = distKm !== null ? Math.round(distKm * 1000) : null;
-                        if (distM === null || distM > 200) {
+                        if (distM === null || distM > 50) {
                           const randomMsg = FUNNY_FAR_AWAY_MESSAGES[Math.floor(Math.random() * FUNNY_FAR_AWAY_MESSAGES.length)];
                           alert(`${randomMsg}\n\n(Aktuální vzdálenost: ${distM !== null ? `${distM} m` : "neznámá (máš povolenou GPS?)"})`);
                           return;

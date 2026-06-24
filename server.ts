@@ -360,8 +360,20 @@ async function initSqlDatabase(): Promise<boolean> {
     console.log("✅ Successfully connected to Azure SQL Database!");
     await createSqlTablesIfNotExist();
     return true;
-  } catch (err) {
-    console.error("❌ Failed to connect to Azure SQL Database. Falling back to local JSON database mode.", err);
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    const isFirewallErr = errMsg.includes("Client with IP address") || errMsg.includes("not allowed to access the server");
+    
+    if (isFirewallErr) {
+      const ipMatch = errMsg.match(/IP address '([^']+)'/);
+      const ipAddr = ipMatch ? ipMatch[1] : "your container IP";
+      console.warn("\n⚠️  AZURE SQL FIREWALL RESTRICTION:");
+      console.warn(`👉 Your Azure SQL Database firewall blocks this container. Please add a firewall rule in Azure SQL for the following IP address if you wish to use Azure SQL mode:`);
+      console.warn(`📌 IP Address to allow: ${ipAddr}`);
+      console.warn("Falling back to local JSON database mode which is fully operational. 🍻\n");
+    } else {
+      console.warn("⚠️ Failed to connect to Azure SQL Database. Falling back to local JSON database mode. Reason:", errMsg);
+    }
     return false;
   }
 }
@@ -1326,6 +1338,8 @@ app.post("/api/gemini/beer-info", async (req, res) => {
 });
 
 // Gemini AI Route 2: Chat and ask food pairings, recommendations, or trivia
+const chatRateLimits = new Map<string, number>();
+
 app.post("/api/gemini/chat", async (req, res) => {
   const { messages, userLatLng } = req.body;
   
@@ -1333,6 +1347,20 @@ app.post("/api/gemini/chat", async (req, res) => {
     res.status(400).json({ error: "Historie zpráv chybí nebo je neplatná." });
     return;
   }
+
+  // Rate limiter check (10 seconds)
+  const clientIp = (req.headers["x-forwarded-for"] as string || req.socket.remoteAddress || "unknown").split(",")[0].trim();
+  const now = Date.now();
+  const lastRequest = chatRateLimits.get(clientIp);
+  if (lastRequest && now - lastRequest < 10000) {
+    const remainingSecs = Math.ceil((10000 - (now - lastRequest)) / 1000);
+    res.status(429).json({
+      error: `Zpomal, kamaráde! Hospodský si musí nejdřív loknout piva. Zeptej se znovu za ${remainingSecs} vteřin. 🍺`,
+      fallback: `Zpomal, kamaráde! Hospodský si musí nejdřív loknout piva. Zeptej se znovu za ${remainingSecs} vteřin. 🍺`
+    });
+    return;
+  }
+  chatRateLimits.set(clientIp, now);
 
   try {
     const ai = getGeminiClient();

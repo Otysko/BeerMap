@@ -15,6 +15,8 @@ import OnboardingModal from "./components/OnboardingModal";
 import AdminReportsModal from "./components/AdminReportsModal";
 import { Beer as BeerIcon, Sparkles, MapPin, Search, ListFilter, SlidersHorizontal, Info, PlusCircle, ArrowUpDown, ChevronLeft, ChevronRight, RefreshCw, X, Award, LogOut, User, Sun, Moon } from "lucide-react";
 
+const ADMIN_EMAIL = (import.meta as any).env?.VITE_ADMIN_EMAIL || "david.kuncar@seznam.cz";
+
 export default function App() {
   const [pubs, setPubs] = useState<Pub[]>([]);
   const [loading, setLoading] = useState(true);
@@ -307,7 +309,7 @@ export default function App() {
   };
 
   const fetchReports = async () => {
-    if (!userProfile || userProfile.email !== "david.kuncar@seznam.cz") return;
+    if (!userProfile || userProfile.email !== ADMIN_EMAIL) return;
     setLoadingReports(true);
     setReportsError("");
     try {
@@ -358,7 +360,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (userProfile?.email === "david.kuncar@seznam.cz") {
+    if (userProfile?.email === ADMIN_EMAIL) {
       fetchReports();
     } else {
       setReports([]);
@@ -985,7 +987,7 @@ export default function App() {
               setIsPassportOpen(false);
             }}
             theme={theme}
-            isAdmin={userProfile?.email === "david.kuncar@seznam.cz"}
+            isAdmin={userProfile?.email === ADMIN_EMAIL}
             unreadReportsCount={reports.filter((r) => r.status !== "Vyřešeno").length}
             onOpenReports={() => setIsAdminReportsOpen(true)}
           />
@@ -1112,7 +1114,7 @@ export default function App() {
       />
 
        {/* 📋 ADMIN EXCLUSIVE ERROR REPORTS MODAL COMPONENT WINDOW */}
-      {userProfile?.email === "david.kuncar@seznam.cz" && (
+      {userProfile?.email === ADMIN_EMAIL && (
         <AdminReportsModal
           isOpen={isAdminReportsOpen}
           onClose={() => setIsAdminReportsOpen(false)}
