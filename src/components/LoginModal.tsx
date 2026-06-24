@@ -16,6 +16,12 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const [isGisLoaded, setIsGisLoaded] = useState(false);
   const [hasGoogleCredentials, setHasGoogleCredentials] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "forgot" | "reset">("login");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
 
   // References to isolate Google's dynamic DOM additions from React's Virtual DOM eyes
   const googleBtnParentRef = useRef<HTMLDivElement>(null);
@@ -26,7 +32,13 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
       setEmailInput("");
       setPasswordInput("");
       setErrorMsg("");
+      setSuccessMsg("");
       setShowPassword(false);
+      setAuthMode("login");
+      setForgotEmail("");
+      setResetCode("");
+      setResetNewPassword("");
+      setShowResetPassword(false);
     }
   }, [isOpen]);
 
@@ -235,6 +247,104 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     }
   };
 
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    const targetEmail = (forgotEmail.trim() || emailInput.trim()).toLowerCase();
+    if (!targetEmail) {
+      setErrorMsg("Zadejte prosím platný e-mail.");
+      return;
+    }
+    if (!targetEmail.includes("@")) {
+      setErrorMsg("E-mail musí obsahovat znak zavináče (@).");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error || "Nepodařilo se odeslat obnovovací kód.");
+        return;
+      }
+
+      setForgotEmail(targetEmail);
+      let msg = data.message;
+      if (data.testCode) {
+        msg += ` (Pro testovací účely použijte kód: ${data.testCode})`;
+      }
+      setSuccessMsg(msg);
+      setAuthMode("reset");
+    } catch (err) {
+      console.error("Forgot password request failed:", err);
+      setErrorMsg("Nepodařilo se spojit se serverem.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    const targetEmail = forgotEmail.trim().toLowerCase();
+    const targetCode = resetCode.trim();
+    const targetPassword = resetNewPassword.trim();
+
+    if (!targetEmail) {
+      setErrorMsg("E-mailová adresa chybí.");
+      return;
+    }
+    if (!targetCode) {
+      setErrorMsg("Zadejte prosím 6místný kód z e-mailu.");
+      return;
+    }
+    if (!targetPassword || targetPassword.length < 8) {
+      setErrorMsg("Nové heslo musí mít alespoň 8 znaků.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: targetEmail,
+          code: targetCode,
+          newPassword: targetPassword
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error || "Obnovení hesla se nezdařilo.");
+        return;
+      }
+
+      setSuccessMsg("Heslo bylo úspěšně obnoveno! Nyní se můžeš přihlásit.");
+      setAuthMode("login");
+      setEmailInput(targetEmail);
+      setPasswordInput(targetPassword);
+      setResetCode("");
+      setResetNewPassword("");
+    } catch (err) {
+      console.error("Reset password request failed:", err);
+      setErrorMsg("Nepodařilo se spojit se serverem.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -249,8 +359,10 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
         <div className="px-6 py-4 flex justify-between items-center border-b border-amber-500/20 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-xl">🍺</span>
-            <h2 className="text-lg font-bold font-display text-slate-100">
-              Přihlášení do Pivního pasu
+            <h2 className="text-lg font-bold font-display text-slate-100 animate-fadeIn" key={authMode}>
+              {authMode === "login" && "Přihlášení do Pivního pasu"}
+              {authMode === "forgot" && "Zapomenuté heslo"}
+              {authMode === "reset" && "Obnovení hesla"}
             </h2>
           </div>
           <button
@@ -263,9 +375,24 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
         {/* Modal Body - Scrollable */}
         <div className="p-6 space-y-5 overflow-y-auto flex-grow animate-fadeIn">
-          <p className="text-xs text-slate-350 leading-relaxed font-sans">
-            Založ si vlastní <strong className="text-amber-500 font-bold">Osobní Pivní Pas</strong>! Můžeš sbírat úspěchy, odemykat až 20 různých pivních odznáčků a uchovávat si kompletní přehled navštívených míst a piv, která jsi osobně vypil.
-          </p>
+          
+          <div key={authMode} className="animate-fadeIn">
+            {authMode === "login" && (
+              <p className="text-xs text-slate-350 leading-relaxed font-sans">
+                Založ si vlastní <strong className="text-amber-500 font-bold">Osobní Pivní Pas</strong>! Můžeš sbírat úspěchy, odemykat až 20 různých pivních odznáčků a uchovávat si kompletní přehled navštívených míst a piv, která jsi osobně vypil.
+              </p>
+            )}
+            {authMode === "forgot" && (
+              <p className="text-xs text-slate-350 leading-relaxed font-sans">
+                Zadej e-mailovou adresu svého Pivního pasu. Zašleme ti na ni 6místný kód pro nastavení nového hesla.
+              </p>
+            )}
+            {authMode === "reset" && (
+              <p className="text-xs text-slate-350 leading-relaxed font-sans">
+                Na tvou e-mailovou adresu byl odeslán 6místný kód. Zadej jej prosím níže spolu se svým novým bezpečnostním heslem.
+              </p>
+            )}
+          </div>
 
           {errorMsg && (
             <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl flex items-start gap-2 text-xs text-red-200 animate-fadeIn">
@@ -274,94 +401,267 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
             </div>
           )}
 
-          {/* Real Google Sign-In Component Area */}
-          {hasGoogleCredentials && (
-            <div className="space-y-3.5 flex flex-col items-center">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block text-center">
-                Přihlásit se přes Google
-              </span>
-              
-              <div className="relative w-[320px] h-[45px] flex items-center justify-center bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-md font-display">
-                <div ref={googleBtnParentRef} className="w-[320px] h-[45px] flex items-center justify-center" />
-                {!isGisLoaded && (
-                  <div className="absolute inset-0 bg-slate-950 flex items-center justify-center gap-2 text-xs text-slate-400 pointer-events-none">
-                    <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Google klient se připravuje...</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="relative flex py-2 items-center w-full">
-                <div className="flex-grow border-t border-slate-800"></div>
-                <span className="flex-shrink mx-3 text-slate-500 text-[10px] font-bold uppercase tracking-wider">Nebo přímé přihlášení</span>
-                <div className="flex-grow border-t border-slate-800"></div>
-              </div>
+          {successMsg && (
+            <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-start gap-2 text-xs text-emerald-200 animate-fadeIn">
+              <Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <span>{successMsg}</span>
             </div>
           )}
 
-          {/* Quick Manual Login Form */}
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
-            <div className="space-y-1.5 font-sans">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1 font-sans">
-                <Mail className="w-3.5 h-3.5 text-amber-500/80" /> E-mailová adresa (pro uložení dat)
-              </label>
-              <input
-                type="text"
-                placeholder="napr. stamgast@seznam.cz"
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
-              />
-            </div>
+          {authMode === "login" && (
+            <>
+              {/* Real Google Sign-In Component Area */}
+              {hasGoogleCredentials && (
+                <div className="space-y-3.5 flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block text-center">
+                    Přihlásit se přes Google
+                  </span>
+                  
+                  <div className="relative w-[320px] h-[45px] flex items-center justify-center bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-md font-display">
+                    <div ref={googleBtnParentRef} className="w-[320px] h-[45px] flex items-center justify-center" />
+                    {!isGisLoaded && (
+                      <div className="absolute inset-0 bg-slate-950 flex items-center justify-center gap-2 text-xs text-slate-400 pointer-events-none">
+                        <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Google klient se připravuje...</span>
+                      </div>
+                    )}
+                  </div>
 
-            <div className="space-y-1.5 font-sans">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
-                  <Lock className="w-3.5 h-3.5 text-amber-500/80" /> Bezpečnostní heslo
-                </label>
-                <span className="text-[9px] text-slate-500 font-semibold">(min. 8 znaků)</span>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
+                  <div className="relative flex py-2 items-center w-full">
+                    <div className="flex-grow border-t border-slate-800"></div>
+                    <span className="flex-shrink mx-3 text-slate-500 text-[10px] font-bold uppercase tracking-wider">Nebo přímé přihlášení</span>
+                    <div className="flex-grow border-t border-slate-800"></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Manual Login Form */}
+              <form onSubmit={handleEmailSubmit} className="space-y-4">
+                <div className="space-y-1.5 font-sans">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1 font-sans">
+                    <Mail className="w-3.5 h-3.5 text-amber-500/80" /> E-mailová adresa (pro uložení dat)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="napr. stamgast@seznam.cz"
+                    value={emailInput}
+                    onChange={(e) => {
+                      setEmailInput(e.target.value);
+                      setForgotEmail(e.target.value);
+                    }}
+                    disabled={isSubmitting}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
+                  />
+                </div>
+
+                <div className="space-y-1.5 font-sans">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                      <Lock className="w-3.5 h-3.5 text-amber-500/80" /> Bezpečnostní heslo
+                    </label>
+                    <span className="text-[9px] text-slate-500 font-semibold">(min. 8 znaků)</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer select-none p-0.5"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center pt-0.5">
+                    <p className="text-[9px] text-slate-450 leading-tight max-w-[70%]">
+                      Pokud vytváříte nový pas, heslo si zvolte. Pokud se vracíte ke svému již založenému pasu, zadejte své heslo.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMsg("");
+                        setSuccessMsg("");
+                        setAuthMode("forgot");
+                      }}
+                      className="text-[10px] text-amber-500 hover:text-amber-400 hover:underline font-bold cursor-pointer whitespace-nowrap self-start"
+                    >
+                      Zapomněl(a) jsi heslo?
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
+                  className="w-full py-2.5 mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-bold font-display text-sm hover:shadow-lg hover:shadow-amber-500/10 cursor-pointer transition flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                      Ověřování...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 stroke-[2.5]" />
+                      Aktivovat Pivní pas
+                    </>
+                  )}
+                </button>
+              </form>
+            </>
+          )}
+
+          {authMode === "forgot" && (
+            <form onSubmit={handleForgotSubmit} className="space-y-4 animate-fadeIn">
+              <div className="space-y-1.5 font-sans">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1 font-sans">
+                  <Mail className="w-3.5 h-3.5 text-amber-500/80" /> E-mailová adresa tvého pasu
+                </label>
+                <input
+                  type="text"
+                  placeholder="napr. stamgast@seznam.cz"
+                  value={forgotEmail}
+                  onChange={(e) => {
+                    setForgotEmail(e.target.value);
+                    setEmailInput(e.target.value);
+                  }}
+                  disabled={isSubmitting}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
                 />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-bold font-display text-sm hover:shadow-lg hover:shadow-amber-500/10 cursor-pointer transition flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                    Odesílání...
+                  </>
+                ) : (
+                  "Odeslat obnovovací kód"
+                )}
+              </button>
+
+              <div className="text-center pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer select-none p-0.5"
+                  onClick={() => {
+                    setErrorMsg("");
+                    setSuccessMsg("");
+                    setAuthMode("login");
+                  }}
+                  className="text-xs text-slate-400 hover:text-slate-100 font-semibold hover:underline cursor-pointer"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  Zpět na přihlášení
                 </button>
               </div>
-              <p className="text-[9px] text-slate-450 leading-tight">
-                Pokud vytváříte nový pas, heslo si zvolte. Pokud se vracíte ke svému již založenému pasu, zadejte své heslo.
-              </p>
-            </div>
+            </form>
+          )}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-2.5 mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-bold font-display text-sm hover:shadow-lg hover:shadow-amber-500/10 cursor-pointer transition flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-                  Ověřování...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 stroke-[2.5]" />
-                  Aktivovat Pivní pas
-                </>
-              )}
-            </button>
-          </form>
+          {authMode === "reset" && (
+            <form onSubmit={handleResetSubmit} className="space-y-4 animate-fadeIn">
+              <div className="space-y-1.5 font-sans">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1 font-sans">
+                  <Mail className="w-3.5 h-3.5 text-amber-500/80" /> Ověřovaný e-mail
+                </label>
+                <input
+                  type="text"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
+                />
+              </div>
+
+              <div className="space-y-1.5 font-sans">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1 font-sans">
+                  <span className="text-amber-500/80 font-bold text-xs">#</span> 6místný obnovovací kód z e-mailu
+                </label>
+                <input
+                  type="text"
+                  placeholder="např. 123456"
+                  maxLength={6}
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition tracking-widest text-center font-mono font-bold disabled:opacity-50"
+                />
+              </div>
+
+              <div className="space-y-1.5 font-sans">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                    <Lock className="w-3.5 h-3.5 text-amber-500/80" /> Nové bezpečnostní heslo
+                  </label>
+                  <span className="text-[9px] text-slate-500 font-semibold">(min. 8 znaků)</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showResetPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={resetNewPassword}
+                    onChange={(e) => setResetNewPassword(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2.5 text-sm focus:border-amber-500/50 outline-none text-slate-100 placeholder-slate-600 transition disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPassword(!showResetPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer select-none p-0.5"
+                  >
+                    {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-bold font-display text-sm hover:shadow-lg hover:shadow-amber-500/10 cursor-pointer transition flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                    Ukládání...
+                  </>
+                ) : (
+                  "Uložit nové heslo"
+                )}
+              </button>
+
+              <div className="text-center pt-2 flex justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleForgotSubmit}
+                  disabled={isSubmitting}
+                  className="text-xs text-amber-500 hover:text-amber-400 font-semibold hover:underline cursor-pointer disabled:opacity-50"
+                >
+                  Znovu odeslat kód
+                </button>
+                <span className="text-slate-600 text-xs">|</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMsg("");
+                    setSuccessMsg("");
+                    setAuthMode("login");
+                  }}
+                  className="text-xs text-slate-400 hover:text-slate-100 font-semibold hover:underline cursor-pointer"
+                >
+                  Zpět na přihlášení
+                </button>
+              </div>
+            </form>
+          )}
 
         </div>
 

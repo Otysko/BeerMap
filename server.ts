@@ -11,6 +11,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import sql from "mssql";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -19,6 +20,24 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = "0.0.0.0";
 const DB_FILE = path.join(process.cwd(), "pubs_data.json");
 const PASSPORTS_FILE = path.join(process.cwd(), "user_passports.json");
+
+// Store reset codes in memory (email -> { code, expires })
+const resetCodes = new Map<string, { code: string; expires: number }>();
+
+function hashPassword(password: string): string {
+  const salt = "ceska_pivni_mapa_salt_2026";
+  const hash = crypto.createHash("sha256").update(password + salt).digest("hex");
+  return `sha256:${hash}`;
+}
+
+function verifyPassword(password: string, storedHash: string): boolean {
+  if (!storedHash) return true; // empty passwords during legacy migration
+  if (!storedHash.startsWith("sha256:")) {
+    // legacy plain-text password support
+    return storedHash === password;
+  }
+  return hashPassword(password) === storedHash;
+}
 
 // Define SEED_PUBS first so it can be referenced in database setup
 const SEED_PUBS = [
@@ -940,10 +959,11 @@ async function loginUserAuth(email: string, name: string, password?: string): Pr
       
       if (checkRes.recordset.length === 0) {
         const newName = name || emailLower.split("@")[0];
+        const hashedPassword = hashPassword(cleanPassword);
         await mssqlPool.request()
           .input("email", sql.NVarChar(100), emailLower)
           .input("userName", sql.NVarChar(100), newName)
-          .input("password", sql.NVarChar(100), cleanPassword)
+          .input("password", sql.NVarChar(100), hashedPassword)
           .query("INSERT INTO passports (email, userName, password, favoriteBeerName) VALUES (@email, @userName, @password, '')");
         return {
           success: true,
@@ -958,13 +978,22 @@ async function loginUserAuth(email: string, name: string, password?: string): Pr
       
       const existing = checkRes.recordset[0];
       if (existing.password) {
-        if (existing.password !== cleanPassword) {
+        if (!verifyPassword(cleanPassword, existing.password)) {
           return { error: "Zadané heslo pro tento e-mail není správné. Zadejte správné heslo nebo použijte jiný e-mail." };
         }
+        // Auto-upgrade plain-text to hashed if it is not hashed yet
+        if (!existing.password.startsWith("sha256:")) {
+          const hashed = hashPassword(cleanPassword);
+          await mssqlPool.request()
+            .input("email", sql.NVarChar(100), emailLower)
+            .input("password", sql.NVarChar(100), hashed)
+            .query("UPDATE passports SET password = @password WHERE email = @email");
+        }
       } else {
+        const hashedPassword = hashPassword(cleanPassword);
         await mssqlPool.request()
           .input("email", sql.NVarChar(100), emailLower)
-          .input("password", sql.NVarChar(100), cleanPassword)
+          .input("password", sql.NVarChar(100), hashedPassword)
           .query("UPDATE passports SET password = @password WHERE email = @email");
       }
       
@@ -984,10 +1013,11 @@ async function loginUserAuth(email: string, name: string, password?: string): Pr
 
   const dbPassports = readPassportsFromDb();
   if (!dbPassports[emailLower]) {
+    const hashedPassword = hashPassword(cleanPassword);
     dbPassports[emailLower] = {
       userEmail: emailLower,
       userName: name || emailLower.split("@")[0],
-      password: cleanPassword,
+      password: hashedPassword,
       visitedPubIds: [],
       visits: [],
       favoriteBeerName: ""
@@ -1006,11 +1036,16 @@ async function loginUserAuth(email: string, name: string, password?: string): Pr
 
   const existingPassport = dbPassports[emailLower];
   if (existingPassport.password) {
-    if (existingPassport.password !== cleanPassword) {
+    if (!verifyPassword(cleanPassword, existingPassport.password)) {
       return { error: "Zadané heslo pro tento e-mail není správné. Zadejte správné heslo nebo použijte jiný e-mail." };
     }
+    // Auto-upgrade plain-text to hashed if it is not hashed yet
+    if (!existingPassport.password.startsWith("sha256:")) {
+      existingPassport.password = hashPassword(cleanPassword);
+      writePassportsToDb(dbPassports);
+    }
   } else {
-    existingPassport.password = cleanPassword;
+    existingPassport.password = hashPassword(cleanPassword);
     if (name) existingPassport.userName = name;
     writePassportsToDb(dbPassports);
   }
@@ -1045,7 +1080,7 @@ async function authorizePassportAsync(req: express.Request, email: string): Prom
 
     if (dbPassword) {
       const incomingPassword = req.headers["x-passport-password"] || req.query.password || "";
-      if (dbPassword !== incomingPassword) return false;
+      if (!verifyPassword(String(incomingPassword), dbPassword)) return false;
     }
     return true;
   } catch (err) {
@@ -1165,47 +1200,80 @@ function writeReportsToDb(reports: any[]) {
   }
 }
 
-async function sendEmailNotification(report: any) {
+async function sendEmailWithFallback(toEmail: string, subject: string, text: string): Promise<boolean> {
   const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT;
+  const port = process.env.SMTP_PORT || "587";
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM || '"Česká pivní mapa" <noreply@pivnimapa.cz>';
-  const to = process.env.SMTP_TO || "david.kuncar93@gmail.com";
+  const from = process.env.SMTP_FROM || user || '"Česká pivní mapa" <noreply@pivnimapa.cz>';
 
   if (!host || !user || !pass) {
-    console.log("SMTP configurations are not completely set. Skipping automatic email send on background progress.");
-    return;
+    console.log("SMTP configurations are not completely set. Skipping email send.");
+    return false;
   }
+
+  const isSecureInitial = process.env.SMTP_SECURE === "true" || (process.env.SMTP_SECURE !== "false" && Number(port) === 465);
 
   try {
-    const isSecure = process.env.SMTP_SECURE === "true" || (process.env.SMTP_SECURE !== "false" && Number(port) === 465);
-
+    console.log(`[SMTP] Attempting to send email to ${toEmail} (secure: ${isSecureInitial}, port: ${port})...`);
     const transporter = nodemailer.createTransport({
       host: host,
-      port: Number(port) || 587,
-      secure: isSecure,
-      auth: {
-        user: user,
-        pass: pass,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
+      port: Number(port),
+      secure: isSecureInitial,
+      auth: { user, pass },
+      tls: { rejectUnauthorized: false }
     });
+    const info = await transporter.sendMail({
+      from,
+      to: toEmail,
+      subject,
+      text
+    });
+    console.log("[SMTP] Email sent successfully: %s", info.messageId);
+    return true;
+  } catch (error: any) {
+    console.log("[SMTP] First email attempt was unsuccessful (will try fallback if applicable):", error.message || error);
+    
+    // Check if it looks like a TLS/SSL wrong version error or connection issue
+    const errMsg = String(error.message || "");
+    const isTlsError = errMsg.includes("wrong version number") || 
+                       errMsg.includes("ESOCKET") || 
+                       errMsg.includes("wrong SSL version") || 
+                       errMsg.includes("SSL") || 
+                       errMsg.includes("CONN");
 
-    const mailOptions = {
-      from: from,
-      to: to,
-      subject: `🚨 NOVÉ HLÁŠENÍ CHYBY: ${report.pubName}`,
-      text: `Ahoj Davide,\n\nv aplikaci Česká pivní mapa bylo nahlášeno nové pochybení u hospody "${report.pubName}" (ID: ${report.pubId || "Neznámé"}).\n\nKategorie chyby:\n${report.category}\n\nDetailní popis:\n${report.description}\n\nNahlásil/a:\n${report.userName} (${report.userEmail})\n\nVytvořeno dne: ${new Date(report.createdAt).toLocaleString("cs-CZ")}\n\nZprávu si můžeš detailně prohlédnout, spravovat nebo označit za vyřešenou přímo ve svém administrátorském rozhraní v aplikaci.\n\nDej si jedno orosené! 🍻`,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Error report notification email sent successfully: %s", info.messageId);
-  } catch (error) {
-    console.error("Failed to send error report notification email:", error);
+    if (isSecureInitial && isTlsError) {
+      console.log("[SMTP] Retrying with secure: false (STARTTLS fallback due to SSL error)...");
+      try {
+        const fallbackTransporter = nodemailer.createTransport({
+          host: host,
+          port: Number(port),
+          secure: false,
+          auth: { user, pass },
+          tls: { rejectUnauthorized: false }
+        });
+        const info = await fallbackTransporter.sendMail({
+          from,
+          to: toEmail,
+          subject,
+          text
+        });
+        console.log("[SMTP] Email sent successfully using STARTTLS fallback: %s", info.messageId);
+        return true;
+      } catch (fallbackError: any) {
+        console.error("[SMTP] Fallback email attempt also failed:", fallbackError.message || fallbackError);
+      }
+    }
   }
+  return false;
+}
+
+async function sendEmailNotification(report: any) {
+  const toEmail = process.env.SMTP_TO || "david.kuncar93@gmail.com";
+  const subject = `🚨 NOVÉ HLÁŠENÍ CHYBY: ${report.pubName}`;
+  const text = `Ahoj Davide,\n\nv aplikaci Česká pivní mapa bylo nahlášeno nové pochybení u hospody "${report.pubName}" (ID: ${report.pubId || "Neznámé"}).\n\nKategorie chyby:\n${report.category}\n\nDetailní popis:\n${report.description}\n\nNahlásil/a:\n${report.userName} (${report.userEmail})\n\nVytvořeno dne: ${new Date(report.createdAt).toLocaleString("cs-CZ")}\n\nZprávu si můžeš detailně prohlédnout, spravovat nebo označit za vyřešenou přímo ve svém administrátorském rozhraní v aplikaci.\n\nDej si jedno orosené! 🍻`;
+
+  await sendEmailWithFallback(toEmail, subject, text);
 }
 
 // Create an error report
@@ -1424,6 +1492,89 @@ app.post("/api/login", async (req, res) => {
   res.json(result);
 });
 
+// Send recovery code for forgot password
+app.post("/api/auth/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    res.status(400).json({ error: "E-mail je povinný údaj." });
+    return;
+  }
+  const emailLower = email.toLowerCase().trim();
+
+  // Check if passport exists
+  let exists = false;
+  if (isSqlMode && mssqlPool) {
+    try {
+      const dbRes = await mssqlPool.request()
+        .input("email", sql.NVarChar(100), emailLower)
+        .query("SELECT email FROM passports WHERE email = @email");
+      exists = dbRes.recordset.length > 0;
+    } catch (e) {
+      console.error("SQL check user existence failed:", e);
+    }
+  } else {
+    const dbPassports = readPassportsFromDb();
+    exists = !!dbPassports[emailLower];
+  }
+
+  if (!exists) {
+    res.status(404).json({ error: "Uživatel s tímto e-mailem u nás nemá založený Pivní Pas." });
+    return;
+  }
+
+  // Generate 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expires = Date.now() + 15 * 60 * 1000; // 15 mins expiry
+  resetCodes.set(emailLower, { code, expires });
+
+  const subject = `🔐 Obnovení hesla - Česká pivní mapa`;
+  const text = `Ahoj,\n\nobdrželi jsme žádost o obnovení hesla k tvému Pivnímu Pasu v aplikaci Česká pivní mapa.\n\nTvá obnova kódu je:\n👉 ${code}\n\nKód je platný po dobu 15 minut. Pokud jsi o změnu hesla nežádal/a, tento e-mail můžeš ignorovat.\n\nDej si jedno orosené! 🍻`;
+
+  const mailSent = await sendEmailWithFallback(emailLower, subject, text);
+
+  if (mailSent) {
+    res.json({ success: true, message: "Kód pro obnovení hesla byl odeslán na váš e-mail." });
+  } else {
+    console.warn(`[Forgot Password] SMTP failed to send code. Recovery code for ${emailLower}: ${code}`);
+    res.json({ 
+      success: true, 
+      message: "Kód pro obnovení hesla se nepodařilo odeslat e-mailem. Zkontrolujte nastavení SMTP serveru v administraci.",
+      testCode: code // provide code as helper in dev if SMTP is not working/configured
+    });
+  }
+});
+
+// Reset password with recovery code
+app.post("/api/auth/reset-password", async (req, res) => {
+  const { email, code, newPassword } = req.body;
+  if (!email || !code || !newPassword) {
+    res.status(400).json({ error: "E-mail, obnovovací kód a nové heslo jsou povinné údaje." });
+    return;
+  }
+  const emailLower = email.toLowerCase().trim();
+  const cleanCode = code.trim();
+
+  const record = resetCodes.get(emailLower);
+  if (!record || record.code !== cleanCode || Date.now() > record.expires) {
+    res.status(400).json({ error: "Neplatný nebo již vypršený obnovovací kód. Zkuste to znovu." });
+    return;
+  }
+
+  if (newPassword.trim().length < 8) {
+    res.status(400).json({ error: "Nové heslo musí mít alespoň 8 znaků." });
+    return;
+  }
+
+  const success = await changePassportPassword(emailLower, newPassword.trim());
+  if (!success) {
+    res.status(500).json({ error: "Nepodařilo se aktualizovat heslo v databázi." });
+    return;
+  }
+
+  resetCodes.delete(emailLower);
+  res.json({ success: true, message: "Vaše heslo bylo úspěšně obnoveno. Nyní se můžete přihlásit s novým heslem." });
+});
+
 // Get or initialize user passport
 app.get("/api/passports/:email", async (req, res) => {
   const { email } = req.params;
@@ -1506,7 +1657,7 @@ app.post("/api/passports/:email/password", async (req, res) => {
     }
   }
 
-  if (dbPassword && dbPassword.trim() !== currentPassword.trim()) {
+  if (dbPassword && !verifyPassword(currentPassword, dbPassword)) {
     res.status(400).json({ error: "Zadané současné heslo není správné." });
     return;
   }
