@@ -170,7 +170,7 @@ export default function MapComponent({
             } else {
               userLocationMarkerRef.current = L.marker([latitude, longitude], { icon: userIcon })
                 .addTo(mapInstanceRef.current)
-                .bindPopup("<strong>Jste zde</strong>")
+                .bindPopup("<strong>Jste zde</strong>", { autoPan: false })
                 .openPopup();
             }
           }
@@ -635,7 +635,7 @@ export default function MapComponent({
         userLocationMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
           .addTo(mapInstanceRef.current);
       }
-      userLocationMarkerRef.current.bindPopup("<strong>Jste zde</strong>").openPopup();
+      userLocationMarkerRef.current.bindPopup("<strong>Jste zde</strong>", { autoPan: false }).openPopup();
       return;
     }
 
@@ -664,7 +664,7 @@ export default function MapComponent({
             userLocationMarkerRef.current = L.marker([latitude, longitude], { icon: userIcon })
               .addTo(mapInstanceRef.current);
           }
-          userLocationMarkerRef.current.bindPopup("<strong>Jste zde</strong>").openPopup();
+          userLocationMarkerRef.current.bindPopup("<strong>Jste zde</strong>", { autoPan: false }).openPopup();
         },
         (error) => {
           console.warn("Geolocation centering failed:", error);
@@ -695,7 +695,7 @@ export default function MapComponent({
       // Create user location marker and set initial map focus only the first time
       userLocationMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
         .addTo(map)
-        .bindPopup("<strong>Jste zde</strong>")
+        .bindPopup("<strong>Jste zde</strong>", { autoPan: false })
         .openPopup();
       map.setView([userLocation.lat, userLocation.lng], 15);
     }
