@@ -598,7 +598,7 @@ export default function App() {
   };
 
   return (
-    <div className={`fixed inset-0 w-full h-[100dvh] flex flex-col bg-slate-950 font-sans text-slate-100 overflow-hidden select-none transition-colors duration-300 ${theme === "light" ? "light-theme" : ""}`}>
+    <div className={`fixed inset-0 w-full h-screen flex flex-col bg-slate-950 font-sans text-slate-100 overflow-hidden select-none transition-colors duration-300 ${theme === "light" ? "light-theme" : ""}`}>
       
       {/* 🍺 TOP NAVIGATION BAR HEADER */}
       <header className="flex-shrink-0 bg-slate-900 border-b border-amber-500/30 px-6 py-3.5 flex items-center justify-between shadow-md">

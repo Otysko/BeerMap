@@ -49,6 +49,7 @@ export default function MapComponent({
   const selectedPubIdRef = useRef<string | null>(selectedPubId);
   const pubsRef = useRef<Pub[]>(pubs);
   const [mapBounds, setMapBounds] = useState<any>(null);
+  const searchLocationMarkerRef = useRef<any>(null);
 
   const onBoundsChangeRef = useRef(onBoundsChange);
   useEffect(() => {
@@ -63,6 +64,31 @@ export default function MapComponent({
   useEffect(() => {
     pubsRef.current = pubs;
   }, [pubs]);
+
+  // Clean up search marker when candidateCoords (adding a new pub) or selectedPubId changes
+  useEffect(() => {
+    if (selectedPubId || candidateCoords) {
+      if (searchLocationMarkerRef.current) {
+        searchLocationMarkerRef.current.remove();
+        searchLocationMarkerRef.current = null;
+      }
+    }
+  }, [selectedPubId, candidateCoords]);
+
+  // Helper to calculate distance in meters using Haversine formula
+  const getDistanceInMeters = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371000; // Earth's radius in meters
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   // Search address input state
   const [searchQuery, setSearchQuery] = useState("");
@@ -458,6 +484,13 @@ export default function MapComponent({
     e.preventDefault();
     if (!searchQuery.trim() || !mapInstanceRef.current) return;
     
+    // Blur any focused element (like the search input) immediately to dismiss the mobile keyboard.
+    // This allows the browser to trigger resize events before we start any flyTo map animation,
+    // avoiding interruption of the transition when keyboard closes and layout updates.
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     setIsSearching(true);
     setSearchError("");
 
@@ -471,13 +504,71 @@ export default function MapComponent({
       const results = await response.json();
       
       if (results && results.length > 0) {
-        const { lat, lon, display_name } = results[0];
+        const { lat, lon } = results[0];
         const targetLat = parseFloat(lat);
         const targetLng = parseFloat(lon);
         
-        mapInstanceRef.current.flyTo([targetLat, targetLng], 15, { duration: 1.2 });
+        // Remove existing search marker
+        if (searchLocationMarkerRef.current) {
+          searchLocationMarkerRef.current.remove();
+          searchLocationMarkerRef.current = null;
+        }
+
+        // Check if there is an existing pub near the target search location
+        let closestPub = null;
+        let closestDist = Infinity;
         
-        setSearchQuery("");
+        const allPubs = pubsRef.current || [];
+        for (const p of allPubs) {
+          const dist = getDistanceInMeters(targetLat, targetLng, p.lat, p.lng);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestPub = p;
+          }
+        }
+
+        // Use a short delay before flyTo so the mobile keyboard closing and layout size adjustments have stabilized
+        setTimeout(() => {
+          if (!mapInstanceRef.current) return;
+
+          // If closest pub is within 120 meters, center and highlight it instead of placing a general pin
+          if (closestPub && closestDist <= 120) {
+            onSelectPub(closestPub.id);
+            mapInstanceRef.current.flyTo([closestPub.lat, closestPub.lng], 16, { duration: 1.2 });
+          } else {
+            // Otherwise, put a custom styled pulsing search location anchor pin (puntík)
+            const pulsingIcon = L.divIcon({
+              html: `
+                <div class="relative flex items-center justify-center">
+                  <div class="absolute w-8 h-8 bg-amber-500/35 rounded-full animate-ping"></div>
+                  <div class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-950 border-2 border-amber-500 shadow-xl text-amber-500">
+                    <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                  </div>
+                </div>
+              `,
+              className: "",
+              iconSize: [32, 32],
+              iconAnchor: [16, 24],
+              popupAnchor: [0, -24]
+            });
+
+            searchLocationMarkerRef.current = L.marker([targetLat, targetLng], { icon: pulsingIcon })
+              .addTo(mapInstanceRef.current)
+              .bindPopup(`<strong class="text-slate-100 font-bold">${searchQuery}</strong>`, {
+                className: "custom-leaflet-popup"
+              })
+              .openPopup();
+
+            mapInstanceRef.current.flyTo([targetLat, targetLng], 16, { duration: 1.2 });
+            onSelectPub(null); // Deselect currently active pub as we highlighted the address pin
+          }
+          
+          setSearchQuery("");
+        }, 150);
+
       } else {
         setSearchError("Místo nebylo nalezeno. Zkuste upřesnit název.");
       }
