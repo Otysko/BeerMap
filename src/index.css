@@ -17,7 +17,7 @@ body,
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100vh;
+  height: 100svh;
   overflow: hidden !important;
   position: fixed;
   top: 0;
@@ -106,6 +106,32 @@ body,
   background: #090d16 !important;
 }
 
+/* Custom Leaflet Popup overrides for Dark Theme */
+.leaflet-popup-content-wrapper {
+  background-color: #0f172a !important; /* bg-slate-900 */
+  color: #f1f5f9 !important; /* text-slate-100 */
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 12px !important;
+}
+
+.leaflet-popup-tip {
+  background-color: #0f172a !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+
+.leaflet-popup-content {
+  font-family: ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  margin: 12px !important;
+}
+
+.popup-text {
+  color: #f1f5f9 !important;
+}
+
+
 /* ========================================================
    LIGHT THEME (SVĚTLÝ REŽIM) OVERRIDES
    ======================================================== */
@@ -113,6 +139,23 @@ body,
   background-color: #f8fafc !important; /* bg-slate-50 */
   color: #0f172a !important; /* text-slate-900 */
 }
+
+.light-theme .leaflet-popup-content-wrapper {
+  background-color: #ffffff !important;
+  color: #0f172a !important; /* text-slate-900 */
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-theme .leaflet-popup-tip {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+
+.light-theme .popup-text {
+  color: #0f172a !important;
+}
+
 
 /* Core containers */
 .light-theme header,

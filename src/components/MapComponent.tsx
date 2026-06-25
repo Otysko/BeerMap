@@ -50,6 +50,7 @@ export default function MapComponent({
   const pubsRef = useRef<Pub[]>(pubs);
   const [mapBounds, setMapBounds] = useState<any>(null);
   const searchLocationMarkerRef = useRef<any>(null);
+  const [highlightedPubId, setHighlightedPubId] = useState<string | null>(null);
 
   const onBoundsChangeRef = useRef(onBoundsChange);
   useEffect(() => {
@@ -59,6 +60,9 @@ export default function MapComponent({
   // Keep refs in sync for event listeners
   useEffect(() => {
     selectedPubIdRef.current = selectedPubId;
+    if (selectedPubId) {
+      setHighlightedPubId(null);
+    }
   }, [selectedPubId]);
 
   useEffect(() => {
@@ -72,6 +76,7 @@ export default function MapComponent({
         searchLocationMarkerRef.current.remove();
         searchLocationMarkerRef.current = null;
       }
+      setHighlightedPubId(null);
     }
   }, [selectedPubId, candidateCoords]);
 
@@ -284,7 +289,7 @@ export default function MapComponent({
 
     // Add or update markers
     visiblePubs.forEach((pub) => {
-      const isSelected = pub.id === selectedPubId;
+      const isSelected = pub.id === selectedPubId || pub.id === highlightedPubId;
       
       // Calculate how many beers are tapped for simple badge number
       const beerCount = pub.beers.length;
@@ -336,6 +341,7 @@ export default function MapComponent({
               e.originalEvent.stopPropagation();
             }
             L.DomEvent.stopPropagation(e);
+            setHighlightedPubId(null);
             onSelectPub(pub.id);
             setCandidateCoords(null);
             setShowAddForm(false);
@@ -356,7 +362,7 @@ export default function MapComponent({
         markersRef.current[pub.id] = marker;
       }
     });
-  }, [pubs, selectedPubId, mapBounds]);
+  }, [pubs, selectedPubId, highlightedPubId, mapBounds]);
 
   // 3. Pan map when selectedPub edits
   useEffect(() => {
@@ -514,6 +520,8 @@ export default function MapComponent({
           searchLocationMarkerRef.current = null;
         }
 
+        const searchedAddress = searchQuery.trim();
+
         // Check if there is an existing pub near the target search location
         let closestPub = null;
         let closestDist = Infinity;
@@ -533,7 +541,8 @@ export default function MapComponent({
 
           // If closest pub is within 120 meters, center and highlight it instead of placing a general pin
           if (closestPub && closestDist <= 120) {
-            onSelectPub(closestPub.id);
+            setHighlightedPubId(closestPub.id);
+            onSelectPub(null); // Center & highlight only, do not open details panel
             mapInstanceRef.current.flyTo([closestPub.lat, closestPub.lng], 16, { duration: 1.2 });
           } else {
             // Otherwise, put a custom styled pulsing search location anchor pin (puntík)
@@ -541,7 +550,7 @@ export default function MapComponent({
               html: `
                 <div class="relative flex items-center justify-center">
                   <div class="absolute w-8 h-8 bg-amber-500/35 rounded-full animate-ping"></div>
-                  <div class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-950 border-2 border-amber-500 shadow-xl text-amber-500">
+                  <div class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-950 border-2 border-amber-500 shadow-xl text-amber-500 cursor-pointer">
                     <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
@@ -557,8 +566,27 @@ export default function MapComponent({
 
             searchLocationMarkerRef.current = L.marker([targetLat, targetLng], { icon: pulsingIcon })
               .addTo(mapInstanceRef.current)
-              .bindPopup(`<strong class="text-slate-100 font-bold">${searchQuery}</strong>`, {
+              .bindPopup(`<strong class="popup-text font-bold">${searchedAddress}</strong>`, {
                 className: "custom-leaflet-popup"
+              })
+              .on("click", (e: any) => {
+                if (e.originalEvent) {
+                  e.originalEvent.stopPropagation();
+                }
+                L.DomEvent.stopPropagation(e);
+
+                // Start creating a new pub at this search location
+                setCandidateCoords({ lat: targetLat, lng: targetLng });
+                setNewPubName("");
+                setNewPubAddress(searchedAddress);
+                setShowAddForm(true);
+                onSelectPub(null);
+
+                // Remove this search marker
+                if (searchLocationMarkerRef.current) {
+                  searchLocationMarkerRef.current.remove();
+                  searchLocationMarkerRef.current = null;
+                }
               })
               .openPopup();
 
